@@ -17,6 +17,11 @@
         integrity="sha384-Y5xukbGJwykbHHkTbLJykYLcBPFxrwipTbEh0puxhkz9CZ90raTPGe2Ks4vCxsYU"
         crossorigin="anonymous"></script>
 
+    <!-- Firebase (mismo proyecto que StockLab) -->
+    <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
+
     <style>
         :root {
             --bg: #0d1114;
@@ -31,6 +36,7 @@
             --accent-dim: #2b6b64;
             --accent-glow: rgba(77, 208, 196, 0.18);
             --ok: #6fcf7a;
+            --ok-bg: rgba(111, 207, 122, 0.12);
             --warn: #f2b84b;
             --danger: #ef6461;
             --danger-bg: rgba(239, 100, 97, 0.12);
@@ -76,6 +82,10 @@
 
         header {
             margin-bottom: 24px;
+            display: flex;
+            align-items: flex-start;
+            justify-content: space-between;
+            gap: 12px;
         }
 
         h1 {
@@ -108,8 +118,6 @@
             padding: 20px 22px;
             margin-bottom: 20px;
         }
-
-        /* ---------- formulario ---------- */
 
         .form-fila {
             display: grid;
@@ -179,6 +187,11 @@
             border-color: var(--accent-dim);
         }
 
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
         .btn-principal {
             background: var(--accent);
             border-color: var(--accent);
@@ -191,7 +204,25 @@
             border-color: #5fe0d3;
         }
 
-        /* ---------- cards resumen ---------- */
+        .btn-secundario {
+            background: transparent;
+            border-color: var(--border-strong);
+        }
+
+        .sesion {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-shrink: 0;
+        }
+
+        .btn-icono {
+            width: auto;
+            padding: 8px 10px;
+            font-size: 1.05rem;
+            line-height: 1;
+            background: transparent;
+        }
 
         .cards {
             display: grid;
@@ -229,8 +260,6 @@
             margin-top: 2px;
         }
 
-        /* ---------- tabs de periodo ---------- */
-
         .tabs-periodo {
             display: flex;
             gap: 4px;
@@ -253,8 +282,6 @@
             color: var(--accent);
             border-bottom-color: var(--accent);
         }
-
-        /* ---------- tablas ---------- */
 
         .tabla-scroll {
             overflow-x: auto;
@@ -297,16 +324,40 @@
             background: var(--bg-elevated);
         }
 
-        tfoot td {
-            padding: 9px 12px;
-            font-weight: 600;
-            color: var(--accent);
-            border-top: 1px solid var(--border-strong);
-        }
-
         .col-total {
             color: var(--accent);
             font-weight: 600;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.03em;
+            padding: 3px 9px;
+            border-radius: 999px;
+        }
+
+        .pill::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .pill-positivo {
+            color: var(--danger);
+            background: var(--danger-bg);
+        }
+
+        .pill-negativo {
+            color: var(--ok);
+            background: var(--ok-bg);
         }
 
         .sin-datos {
@@ -372,6 +423,183 @@
             border-radius: 6px;
         }
 
+        .pantalla-auth {
+            position: fixed;
+            inset: 0;
+            z-index: 200;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            background:
+                radial-gradient(circle at 15% 0%, rgba(77, 208, 196, 0.06), transparent 45%),
+                var(--bg);
+            overflow-y: auto;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 380px;
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 32px 28px;
+        }
+
+        .auth-logo {
+            text-align: center;
+            margin: 0 0 28px;
+            font-size: 1.5rem;
+        }
+
+        .auth-form {
+            flex-direction: column;
+            gap: 0;
+        }
+
+        .auth-form label {
+            margin-top: 14px;
+        }
+
+        .auth-form label:first-of-type {
+            margin-top: 0;
+        }
+
+        .auth-form .btn-principal {
+            margin-top: 22px;
+            width: 100%;
+        }
+
+        .auth-error {
+            min-height: 18px;
+            color: var(--danger);
+            font-size: 0.8rem;
+            margin: 10px 0 0;
+        }
+
+        .auth-switch {
+            text-align: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin: 18px 0 0;
+        }
+
+        .auth-switch a {
+            color: var(--accent);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .auth-nota {
+            text-align: center;
+            font-size: 0.74rem;
+            color: var(--text-faint);
+            margin: 20px 0 0;
+            line-height: 1.4;
+        }
+
+        .pendiente-msg {
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.92rem;
+            line-height: 1.5;
+            margin: 0 0 24px;
+        }
+
+        .modal-admin {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(6, 9, 11, 0.75);
+            backdrop-filter: blur(3px);
+            align-items: center;
+            justify-content: center;
+            z-index: 150;
+            padding: 20px;
+        }
+
+        .adminBox {
+            width: min(520px, 100%);
+            max-height: 80vh;
+            background: var(--bg-panel);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .adminHeader {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 18px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .adminHeader h2 {
+            border: none;
+            padding: 0;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        .adminHeader button {
+            width: auto;
+            margin: 0;
+            padding: 4px 10px;
+            background: transparent;
+        }
+
+        .lista-pendientes {
+            padding: 16px 20px 20px;
+            overflow-y: auto;
+        }
+
+        .lista-pendientes p {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            text-align: center;
+            padding: 20px 0;
+        }
+
+        .filaPendiente {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 12px;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            margin-bottom: 8px;
+        }
+
+        .filaPendiente span {
+            flex: 1;
+            font-size: 0.85rem;
+            word-break: break-all;
+        }
+
+        .filaPendiente button {
+            width: auto;
+            margin: 0;
+            padding: 7px 10px;
+            font-size: 0.76rem;
+            white-space: nowrap;
+        }
+
+        .filaPendiente .btnAprobar {
+            border-color: var(--ok);
+            color: var(--ok);
+        }
+
+        .filaPendiente .btnRechazar {
+            border-color: var(--danger);
+            color: var(--danger);
+        }
+
         @media (max-width: 640px) {
             .contenedor {
                 padding: 20px 14px 48px;
@@ -392,122 +620,258 @@
 
 <body>
 
-    <div class="contenedor">
+    <div id="pantallaLogin" class="pantalla-auth" style="display:none;">
+        <div class="auth-card">
 
-        <header>
-            <h1>🧫 Estadística de Serología</h1>
-            <p class="subtitulo">VDRL · HIV · Hepatitis B · Toxoplasmosis · Chagas · PCR — cantidad de análisis por
-                semana, mes y año</p>
-        </header>
+            <h1 class="auth-logo">🧫 Serología</h1>
 
-        <div class="panel">
-            <h2>➕ Cargar análisis</h2>
+            <form id="formLogin" class="auth-form" style="display:flex;">
 
-            <div class="form-fila">
+                <label>Correo</label>
+                <input type="email" id="loginEmail" required placeholder="tu@correo.com" autocomplete="username">
 
-                <div>
-                    <label>Fecha</label>
-                    <input type="date" id="fecha">
-                </div>
+                <label>Contraseña</label>
+                <input type="password" id="loginPassword" required placeholder="••••••••" autocomplete="current-password">
 
-                <div>
-                    <label>Reactivo</label>
-                    <select id="reactivo">
-                        <option value="VDRL">VDRL</option>
-                        <option value="HIV">HIV</option>
-                        <option value="HEPATITIS B">Hepatitis B</option>
-                        <option value="TOXOPLASMOSIS">Toxoplasmosis</option>
-                        <option value="CHAGAS">Chagas</option>
-                        <option value="PCR">PCR</option>
-                    </select>
-                </div>
+                <p id="loginError" class="auth-error"></p>
 
-                <div>
-                    <label>Cantidad de análisis</label>
-                    <input type="number" id="cantidad" value="1" min="1">
-                </div>
+                <button type="submit" class="btn-principal">Ingresar</button>
 
-                <div>
-                    <button class="btn-principal" id="btnAgregar" type="button">➕ Agregar</button>
-                </div>
+                <p class="auth-switch">
+                    ¿No tenés cuenta? <a href="#" id="linkMostrarRegistro">Registrate</a>
+                </p>
 
-            </div>
+            </form>
+
+            <form id="formRegistro" class="auth-form" style="display:none;">
+
+                <label>Correo</label>
+                <input type="email" id="registroEmail" required placeholder="tu@correo.com" autocomplete="username">
+
+                <label>Contraseña</label>
+                <input type="password" id="registroPassword" required placeholder="Mínimo 6 caracteres" minlength="6" autocomplete="new-password">
+
+                <p id="registroError" class="auth-error"></p>
+
+                <button type="submit" class="btn-principal">Crear cuenta</button>
+
+                <p class="auth-switch">
+                    ¿Ya tenés cuenta?
+                    <a href="#" id="linkMostrarLogin" style="display:none;">Iniciar sesión</a>
+                </p>
+
+            </form>
+
+            <p class="auth-nota">
+                Usa el mismo usuario y contraseña que StockLab. Las cuentas nuevas
+                quedan pendientes de aprobación por un administrador.
+            </p>
+
         </div>
+    </div>
 
-        <div class="cards" id="cards"></div>
+    <div id="pantallaPendiente" class="pantalla-auth" style="display:none;">
+        <div class="auth-card">
 
-        <div class="panel">
-            <h2>📊 Totales por período</h2>
+            <h1 class="auth-logo">🧫 Serología</h1>
 
-            <div class="tabs-periodo">
-                <button class="tab-periodo activo" data-periodo="semana">Semana</button>
-                <button class="tab-periodo" data-periodo="mes">Mes</button>
-                <button class="tab-periodo" data-periodo="año">Año</button>
-            </div>
+            <p class="pendiente-msg">
+                ⏳ Tu cuenta está pendiente de aprobación por un administrador.
+                Volvé a intentarlo más tarde.
+            </p>
 
-            <div class="tabla-scroll">
-                <table id="tablaPeriodo">
-                    <thead>
-                        <tr>
-                            <th>Período</th>
-                            <th>VDRL</th>
-                            <th>HIV</th>
-                            <th>Hep. B</th>
-                            <th>Toxo.</th>
-                            <th>Chagas</th>
-                            <th>PCR</th>
-                            <th>Total</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cuerpoTablaPeriodo"></tbody>
-                </table>
-            </div>
+            <button id="btnLogoutPendiente" class="btn-secundario" style="width:100%;">
+                Cerrar sesión
+            </button>
+
         </div>
+    </div>
 
-        <div class="panel">
-            <h2>🥧 Distribución por reactivo (histórico total)</h2>
+    <div id="appContenido" style="display:none;">
 
-            <div class="tabla-scroll">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Reactivo</th>
-                            <th>Cantidad</th>
-                            <th>% del total</th>
-                        </tr>
-                    </thead>
-                    <tbody id="cuerpoTablaPorcentaje"></tbody>
-                </table>
+        <div class="contenedor">
+
+            <header>
+                <div>
+                    <h1>🧫 Estadística de Serología</h1>
+                    <p class="subtitulo">VDRL · HIV · Hepatitis B · Toxoplasmosis · Chagas · PCR</p>
+                </div>
+
+                <div class="sesion">
+                    <button id="btnAdminPanel" class="btn-icono" type="button" aria-label="Panel de administración" style="display:none;">🛠️</button>
+                    <button id="btnLogout" class="btn-icono" type="button" aria-label="Cerrar sesión">🚪</button>
+                </div>
+            </header>
+
+            <div class="panel">
+                <h2>➕ Cargar análisis</h2>
+
+                <div class="form-fila">
+
+                    <div>
+                        <label>Fecha</label>
+                        <input type="date" id="fecha">
+                    </div>
+
+                    <div>
+                        <label>Reactivo</label>
+                        <select id="reactivo">
+                            <option value="VDRL">VDRL</option>
+                            <option value="HIV">HIV</option>
+                            <option value="HEPATITIS B">Hepatitis B</option>
+                            <option value="TOXOPLASMOSIS">Toxoplasmosis</option>
+                            <option value="CHAGAS">Chagas</option>
+                            <option value="PCR">PCR</option>
+                        </select>
+                    </div>
+
+                    <div>
+                        <label>Resultado</label>
+                        <select id="resultado"></select>
+                    </div>
+
+                    <div>
+                        <label>Cantidad</label>
+                        <input type="number" id="cantidad" value="1" min="1">
+                    </div>
+
+                    <div>
+                        <button class="btn-principal" id="btnAgregar" type="button">➕ Agregar</button>
+                    </div>
+
+                </div>
             </div>
-        </div>
 
-        <div class="panel">
-            <h2>📋 Historial de carga</h2>
+            <div class="cards" id="cards"></div>
 
-            <div class="tabla-scroll">
-                <table>
-                    <thead>
-                        <tr>
-                            <th>Fecha</th>
-                            <th>Reactivo</th>
-                            <th>Cantidad</th>
-                            <th></th>
-                        </tr>
-                    </thead>
-                    <tbody id="cuerpoHistorial"></tbody>
-                </table>
+            <div class="panel">
+                <h2>📊 Totales por período</h2>
+
+                <div class="tabs-periodo">
+                    <button class="tab-periodo activo" data-periodo="semana">Semana</button>
+                    <button class="tab-periodo" data-periodo="mes">Mes</button>
+                    <button class="tab-periodo" data-periodo="año">Año</button>
+                </div>
+
+                <div class="tabla-scroll">
+                    <table id="tablaPeriodo">
+                        <thead>
+                            <tr>
+                                <th>Período</th>
+                                <th>VDRL</th>
+                                <th>HIV</th>
+                                <th>Hep. B</th>
+                                <th>Toxo.</th>
+                                <th>Chagas</th>
+                                <th>PCR</th>
+                                <th>Total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoTablaPeriodo"></tbody>
+                    </table>
+                </div>
             </div>
 
-            <div class="acciones-globales">
-                <button class="btn-borrar-todo" id="btnBorrarTodo" type="button">🗑️ Borrar todos los datos</button>
+            <div class="panel">
+                <h2>🥧 Distribución por reactivo (histórico total)</h2>
+
+                <div class="tabla-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Reactivo</th>
+                                <th>Cantidad</th>
+                                <th>% del total</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoTablaPorcentaje"></tbody>
+                    </table>
+                </div>
             </div>
+
+            <div class="panel">
+                <h2>🧪 Resultados (Reactivo/No Reactivo · Positivo/Negativo)</h2>
+
+                <div class="tabla-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Reactivo</th>
+                                <th>Total</th>
+                                <th>Resultado A</th>
+                                <th>Cant.</th>
+                                <th>%</th>
+                                <th>Resultado B</th>
+                                <th>Cant.</th>
+                                <th>%</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoTablaResultados"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="panel">
+                <h2>📋 Historial de carga</h2>
+
+                <div class="tabla-scroll">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Fecha</th>
+                                <th>Reactivo</th>
+                                <th>Resultado</th>
+                                <th>Cantidad</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoHistorial"></tbody>
+                    </table>
+                </div>
+
+                <div class="acciones-globales">
+                    <button class="btn-borrar-todo" id="btnBorrarTodo" type="button">🗑️ Borrar todos los datos</button>
+                </div>
+            </div>
+
         </div>
 
     </div>
 
+    <div id="modalAdmin" class="modal-admin">
+        <div class="adminBox">
+
+            <div class="adminHeader">
+                <h2>🛠️ Usuarios pendientes</h2>
+                <button id="cerrarModalAdmin">✖</button>
+            </div>
+
+            <div id="listaPendientes" class="lista-pendientes">
+            </div>
+
+        </div>
+    </div>
+
     <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyC21cJIHv1sEBQ2WVgBB_b3OG8rklNhJmg",
+            authDomain: "stocklab-4e30e.firebaseapp.com",
+            projectId: "stocklab-4e30e",
+            storageBucket: "stocklab-4e30e.firebasestorage.app",
+            messagingSenderId: "104155908756",
+            appId: "1:104155908756:web:314cd3dc78ef94437a0281",
+            measurementId: "G-PVKEDY9JY9"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        const COLECCION = "analisisSerologia";
+
         const REACTIVOS = ["VDRL", "HIV", "HEPATITIS B", "TOXOPLASMOSIS", "CHAGAS", "PCR"];
-        const ETIQUETAS = {
+
+        const ETIQUETAS_REACTIVO = {
             "VDRL": "VDRL",
             "HIV": "HIV",
             "HEPATITIS B": "Hepatitis B",
@@ -515,36 +879,239 @@
             "CHAGAS": "Chagas",
             "PCR": "PCR"
         };
-        const CLAVE_STORAGE = "serologia_entries";
 
-        let entradas = cargarEntradas();
+        const GRUPOS_RESULTADO = {
+            "VDRL": "REACTIVO_NOREACTIVO",
+            "HIV": "REACTIVO_NOREACTIVO",
+            "HEPATITIS B": "REACTIVO_NOREACTIVO",
+            "TOXOPLASMOSIS": "POSITIVO_NEGATIVO",
+            "CHAGAS": "POSITIVO_NEGATIVO",
+            "PCR": "POSITIVO_NEGATIVO"
+        };
 
-        // ------------------------------------------------------------
-        // Persistencia (localStorage)
-        // ------------------------------------------------------------
+        const OPCIONES_RESULTADO = {
+            "REACTIVO_NOREACTIVO": [
+                { valor: "REACTIVO", etiqueta: "Reactivo" },
+                { valor: "NO_REACTIVO", etiqueta: "No Reactivo" }
+            ],
+            "POSITIVO_NEGATIVO": [
+                { valor: "POSITIVO", etiqueta: "Positivo" },
+                { valor: "NEGATIVO", etiqueta: "Negativo" }
+            ]
+        };
 
-        function cargarEntradas() {
-            try {
-                const datos = localStorage.getItem(CLAVE_STORAGE);
-                return datos ? JSON.parse(datos) : [];
-            } catch (e) {
-                console.error("No se pudo leer el historial guardado:", e);
-                return [];
-            }
+        let entradas = [];
+
+        const pantallaLogin = document.getElementById("pantallaLogin");
+        const pantallaPendiente = document.getElementById("pantallaPendiente");
+        const appContenido = document.getElementById("appContenido");
+        const btnAdminPanel = document.getElementById("btnAdminPanel");
+
+        const formLogin = document.getElementById("formLogin");
+        const loginEmail = document.getElementById("loginEmail");
+        const loginPassword = document.getElementById("loginPassword");
+        const loginError = document.getElementById("loginError");
+
+        const formRegistro = document.getElementById("formRegistro");
+        const registroEmail = document.getElementById("registroEmail");
+        const registroPassword = document.getElementById("registroPassword");
+        const registroError = document.getElementById("registroError");
+
+        const linkMostrarRegistro = document.getElementById("linkMostrarRegistro");
+        const linkMostrarLogin = document.getElementById("linkMostrarLogin");
+
+        const btnLogout = document.getElementById("btnLogout");
+        const btnLogoutPendiente = document.getElementById("btnLogoutPendiente");
+
+        let listenerMovimientos = null;
+
+        function mostrarSoloPantalla(pantalla, tipoDisplay) {
+            pantallaLogin.style.display = "none";
+            pantallaPendiente.style.display = "none";
+            appContenido.style.display = "none";
+            pantalla.style.display = tipoDisplay || "flex";
         }
 
-        function guardarEntradas() {
-            try {
-                localStorage.setItem(CLAVE_STORAGE, JSON.stringify(entradas));
-            } catch (e) {
-                console.error("No se pudo guardar el historial:", e);
-                alert("No se pudo guardar el dato. Puede que el almacenamiento del navegador esté lleno o deshabilitado.");
-            }
+        linkMostrarRegistro.addEventListener("click", function (e) {
+            e.preventDefault();
+            formLogin.style.display = "none";
+            formRegistro.style.display = "flex";
+            linkMostrarRegistro.style.display = "none";
+            linkMostrarLogin.style.display = "inline";
+        });
+
+        linkMostrarLogin.addEventListener("click", function (e) {
+            e.preventDefault();
+            formRegistro.style.display = "none";
+            formLogin.style.display = "flex";
+            linkMostrarLogin.style.display = "none";
+            linkMostrarRegistro.style.display = "inline";
+        });
+
+        function traducirErrorFirebase(error) {
+            const codigo = error.code || "";
+            if (codigo.includes("email-already-in-use")) return "Ese correo ya está registrado.";
+            if (codigo.includes("invalid-email")) return "El correo no es válido.";
+            if (codigo.includes("weak-password")) return "La contraseña debe tener al menos 6 caracteres.";
+            if (codigo.includes("user-not-found") || codigo.includes("wrong-password") || codigo.includes("invalid-credential")) return "Correo o contraseña incorrectos.";
+            if (codigo.includes("too-many-requests")) return "Demasiados intentos. Probá de nuevo en unos minutos.";
+            if (codigo.includes("network-request-failed")) return "Error de conexión. Revisá tu internet.";
+            return "Ocurrió un error: " + error.message;
         }
 
-        // ------------------------------------------------------------
-        // Utilidades de fecha
-        // ------------------------------------------------------------
+        formLogin.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            loginError.textContent = "";
+            try {
+                await auth.signInWithEmailAndPassword(loginEmail.value.trim(), loginPassword.value);
+            } catch (error) {
+                console.error(error);
+                loginError.textContent = traducirErrorFirebase(error);
+            }
+        });
+
+        formRegistro.addEventListener("submit", async function (e) {
+            e.preventDefault();
+            registroError.textContent = "";
+            try {
+                const credencial = await auth.createUserWithEmailAndPassword(
+                    registroEmail.value.trim(),
+                    registroPassword.value
+                );
+                await db.collection("usuarios").doc(credencial.user.uid).set({
+                    email: registroEmail.value.trim(),
+                    aprobado: false,
+                    admin: false,
+                    fechaSolicitud: firebase.firestore.FieldValue.serverTimestamp()
+                });
+                formRegistro.reset();
+            } catch (error) {
+                console.error(error);
+                registroError.textContent = traducirErrorFirebase(error);
+            }
+        });
+
+        btnLogout.addEventListener("click", function () { auth.signOut(); });
+        btnLogoutPendiente.addEventListener("click", function () { auth.signOut(); });
+
+        auth.onAuthStateChanged(async function (user) {
+
+            if (listenerMovimientos) {
+                listenerMovimientos();
+                listenerMovimientos = null;
+            }
+
+            if (!user) {
+                mostrarSoloPantalla(pantallaLogin);
+                return;
+            }
+
+            try {
+                const doc = await db.collection("usuarios").doc(user.uid).get();
+
+                if (!doc.exists) {
+                    await auth.signOut();
+                    return;
+                }
+
+                const datos = doc.data();
+
+                if (datos.aprobado === true) {
+                    mostrarSoloPantalla(appContenido, "block");
+                    btnAdminPanel.style.display = (datos.admin === true) ? "inline-flex" : "none";
+                    iniciarEscuchaDatos();
+                } else {
+                    mostrarSoloPantalla(pantallaPendiente);
+                }
+
+            } catch (error) {
+                console.error(error);
+                mostrarSoloPantalla(pantallaLogin);
+            }
+
+        });
+
+        const modalAdmin = document.getElementById("modalAdmin");
+        const cerrarModalAdmin = document.getElementById("cerrarModalAdmin");
+        const listaPendientes = document.getElementById("listaPendientes");
+
+        btnAdminPanel.addEventListener("click", function () {
+            modalAdmin.style.display = "flex";
+            cargarPendientes();
+        });
+
+        cerrarModalAdmin.addEventListener("click", function () {
+            modalAdmin.style.display = "none";
+        });
+
+        async function cargarPendientes() {
+
+            listaPendientes.innerHTML = "<p>Cargando...</p>";
+
+            try {
+                const snapshot = await db.collection("usuarios").where("aprobado", "==", false).get();
+
+                if (snapshot.empty) {
+                    listaPendientes.innerHTML = "<p>No hay usuarios pendientes.</p>";
+                    return;
+                }
+
+                listaPendientes.innerHTML = "";
+
+                snapshot.forEach(function (docSnap) {
+                    const datos = docSnap.data();
+                    const fila = document.createElement("div");
+                    fila.className = "filaPendiente";
+                    fila.innerHTML = `
+                        <span>${datos.email}</span>
+                        <button class="btnAprobar" data-uid="${docSnap.id}">✅ Aprobar</button>
+                        <button class="btnRechazar" data-uid="${docSnap.id}">🗑️ Rechazar</button>
+                    `;
+                    listaPendientes.appendChild(fila);
+                });
+
+                listaPendientes.querySelectorAll(".btnAprobar").forEach(function (boton) {
+                    boton.addEventListener("click", async function () {
+                        boton.disabled = true;
+                        await db.collection("usuarios").doc(this.dataset.uid).update({ aprobado: true });
+                        cargarPendientes();
+                    });
+                });
+
+                listaPendientes.querySelectorAll(".btnRechazar").forEach(function (boton) {
+                    boton.addEventListener("click", async function () {
+                        if (confirm("¿Rechazar y eliminar esta solicitud?")) {
+                            await db.collection("usuarios").doc(this.dataset.uid).delete();
+                            cargarPendientes();
+                        }
+                    });
+                });
+
+            } catch (error) {
+                console.error(error);
+                listaPendientes.innerHTML = "<p>Error cargando usuarios: " + error.message + "</p>";
+            }
+
+        }
+
+        function iniciarEscuchaDatos() {
+
+            listenerMovimientos = db.collection(COLECCION)
+                .orderBy("id", "asc")
+                .onSnapshot(function (snapshot) {
+
+                    entradas = [];
+                    snapshot.forEach(function (docSnap) {
+                        entradas.push(docSnap.data());
+                    });
+
+                    renderizarTodo();
+
+                }, function (error) {
+                    console.error("Error escuchando datos:", error);
+                });
+
+        }
 
         function parsearFecha(fechaISO) {
             const [y, m, d] = fechaISO.split("-").map(Number);
@@ -558,7 +1125,7 @@
         }
 
         function obtenerRangoSemana(fecha) {
-            const diaSemana = fecha.getDay() || 7; // lunes=1 ... domingo=7
+            const diaSemana = fecha.getDay() || 7;
             const lunes = new Date(fecha);
             lunes.setDate(fecha.getDate() - diaSemana + 1);
             const domingo = new Date(lunes);
@@ -601,12 +1168,9 @@
             return String(fecha.getFullYear());
         }
 
-        // ------------------------------------------------------------
-        // Formulario
-        // ------------------------------------------------------------
-
         const inputFecha = document.getElementById("fecha");
         const inputReactivo = document.getElementById("reactivo");
+        const inputResultado = document.getElementById("resultado");
         const inputCantidad = document.getElementById("cantidad");
         const btnAgregar = document.getElementById("btnAgregar");
 
@@ -620,10 +1184,22 @@
 
         inputFecha.value = fechaHoyISO();
 
-        btnAgregar.addEventListener("click", function () {
+        function actualizarOpcionesResultado() {
+            const grupo = GRUPOS_RESULTADO[inputReactivo.value];
+            const opciones = OPCIONES_RESULTADO[grupo];
+            inputResultado.innerHTML = opciones.map(function (o) {
+                return `<option value="${o.valor}">${o.etiqueta}</option>`;
+            }).join("");
+        }
+
+        inputReactivo.addEventListener("change", actualizarOpcionesResultado);
+        actualizarOpcionesResultado();
+
+        btnAgregar.addEventListener("click", async function () {
 
             const fecha = inputFecha.value;
             const reactivo = inputReactivo.value;
+            const resultado = inputResultado.value;
             const cantidad = Number(inputCantidad.value);
 
             if (!fecha) {
@@ -636,35 +1212,68 @@
                 return;
             }
 
-            entradas.push({
-                id: Date.now(),
-                fecha: fecha,
-                reactivo: reactivo,
-                cantidad: cantidad
-            });
+            btnAgregar.disabled = true;
 
-            guardarEntradas();
-            inputCantidad.value = 1;
-            renderizarTodo();
+            try {
+
+                const entrada = {
+                    id: Date.now(),
+                    fecha: fecha,
+                    reactivo: reactivo,
+                    resultado: resultado,
+                    cantidad: cantidad
+                };
+
+                await db.collection(COLECCION).doc(String(entrada.id)).set(entrada);
+
+                inputCantidad.value = 1;
+
+            } catch (error) {
+                console.error(error);
+                alert("No se pudo guardar el análisis: " + error.message);
+            } finally {
+                btnAgregar.disabled = false;
+            }
 
         });
 
-        document.getElementById("btnBorrarTodo").addEventListener("click", function () {
+        document.getElementById("btnBorrarTodo").addEventListener("click", async function () {
 
             if (entradas.length === 0) return;
 
-            const confirmar = confirm("¿Borrar todo el historial cargado? Esta acción no se puede deshacer.");
+            const confirmar = confirm("¿Borrar todo el historial cargado? Esta acción no se puede deshacer y afecta a todos los usuarios.");
             if (!confirmar) return;
 
-            entradas = [];
-            guardarEntradas();
-            renderizarTodo();
+            try {
+
+                const grupos = [];
+                for (let i = 0; i < entradas.length; i += 450) {
+                    grupos.push(entradas.slice(i, i + 450));
+                }
+
+                for (const grupo of grupos) {
+                    const lote = db.batch();
+                    grupo.forEach(function (entrada) {
+                        lote.delete(db.collection(COLECCION).doc(String(entrada.id)));
+                    });
+                    await lote.commit();
+                }
+
+            } catch (error) {
+                console.error(error);
+                alert("No se pudo borrar todo: " + error.message);
+            }
 
         });
 
-        // ------------------------------------------------------------
-        // Cards resumen
-        // ------------------------------------------------------------
+        async function eliminarEntrada(id) {
+            try {
+                await db.collection(COLECCION).doc(String(id)).delete();
+            } catch (error) {
+                console.error(error);
+                alert("No se pudo eliminar: " + error.message);
+            }
+        }
 
         function totalEnRango(desde, hasta) {
             return entradas
@@ -714,10 +1323,6 @@
 
         }
 
-        // ------------------------------------------------------------
-        // Tabla por período (semana / mes / año)
-        // ------------------------------------------------------------
-
         let periodoActivo = "semana";
 
         document.querySelectorAll(".tab-periodo").forEach(function (boton) {
@@ -743,7 +1348,7 @@
             entradas.forEach(function (e) {
 
                 const fecha = parsearFecha(e.fecha);
-                let clave, etiqueta, ordenar;
+                let clave, etiqueta;
 
                 if (periodoActivo === "semana") {
                     clave = claveSemana(fecha);
@@ -781,14 +1386,9 @@
 
         }
 
-        // ------------------------------------------------------------
-        // Tabla de porcentaje (distribución histórica total)
-        // ------------------------------------------------------------
-
         function renderizarTablaPorcentaje() {
 
             const cuerpo = document.getElementById("cuerpoTablaPorcentaje");
-
             const totalHistorico = entradas.reduce(function (acc, e) { return acc + e.cantidad; }, 0);
 
             if (totalHistorico === 0) {
@@ -807,34 +1407,79 @@
                 .slice()
                 .sort(function (a, b) { return totalesPorReactivo[b] - totalesPorReactivo[a]; })
                 .map(function (r) {
-
                     const cantidad = totalesPorReactivo[r];
                     const porcentaje = ((cantidad / totalHistorico) * 100).toFixed(1);
-
                     return `
                         <tr>
-                            <td>${ETIQUETAS[r]}</td>
+                            <td>${ETIQUETAS_REACTIVO[r]}</td>
                             <td>${cantidad}</td>
                             <td>
                                 <span class="barra-porcentaje" style="width:${Math.max(porcentaje, 2)}px"></span>${porcentaje}%
                             </td>
                         </tr>
                     `;
-
                 }).join("");
 
         }
 
-        // ------------------------------------------------------------
-        // Historial de carga
-        // ------------------------------------------------------------
+        function renderizarTablaResultados() {
+
+            const cuerpo = document.getElementById("cuerpoTablaResultados");
+
+            if (entradas.length === 0) {
+                cuerpo.innerHTML = `<tr><td colspan="8" class="sin-datos">Todavía no hay datos.</td></tr>`;
+                return;
+            }
+
+            cuerpo.innerHTML = REACTIVOS.map(function (r) {
+
+                const grupo = GRUPOS_RESULTADO[r];
+                const opciones = OPCIONES_RESULTADO[grupo];
+
+                const totalesResultado = {};
+                opciones.forEach(function (o) { totalesResultado[o.valor] = 0; });
+
+                let total = 0;
+
+                entradas.forEach(function (e) {
+                    if (e.reactivo !== r) return;
+                    totalesResultado[e.resultado] = (totalesResultado[e.resultado] || 0) + e.cantidad;
+                    total += e.cantidad;
+                });
+
+                const opA = opciones[0];
+                const opB = opciones[1];
+                const cantA = totalesResultado[opA.valor] || 0;
+                const cantB = totalesResultado[opB.valor] || 0;
+                const pctA = total > 0 ? ((cantA / total) * 100).toFixed(1) : "0.0";
+                const pctB = total > 0 ? ((cantB / total) * 100).toFixed(1) : "0.0";
+
+                const claseA = (opA.valor === "REACTIVO" || opA.valor === "POSITIVO") ? "pill-positivo" : "pill-negativo";
+                const claseB = (opB.valor === "REACTIVO" || opB.valor === "POSITIVO") ? "pill-positivo" : "pill-negativo";
+
+                return `
+                    <tr>
+                        <td>${ETIQUETAS_REACTIVO[r]}</td>
+                        <td class="col-total">${total}</td>
+                        <td><span class="pill ${claseA}">${opA.etiqueta}</span></td>
+                        <td>${cantA}</td>
+                        <td>${pctA}%</td>
+                        <td><span class="pill ${claseB}">${opB.etiqueta}</span></td>
+                        <td>${cantB}</td>
+                        <td>${pctB}%</td>
+                    </tr>
+                `;
+
+            }).join("");
+
+        }
 
         function renderizarHistorial() {
 
             const cuerpo = document.getElementById("cuerpoHistorial");
 
             if (entradas.length === 0) {
-                cuerpo.innerHTML = `<tr><td colspan="4" class="sin-datos">Sin cargas todavía.</td></tr>`;
+                cuerpo.innerHTML = `<tr><td colspan="5" class="sin-datos">Sin cargas todavía.</td></tr>`;
                 return;
             }
 
@@ -846,11 +1491,16 @@
 
                 const fecha = parsearFecha(e.fecha);
                 const fechaTexto = `${formatearFechaCorta(fecha)}/${fecha.getFullYear()}`;
+                const grupo = GRUPOS_RESULTADO[e.reactivo];
+                const opcion = OPCIONES_RESULTADO[grupo].find(function (o) { return o.valor === e.resultado; });
+                const etiquetaResultado = opcion ? opcion.etiqueta : e.resultado;
+                const clase = (e.resultado === "REACTIVO" || e.resultado === "POSITIVO") ? "pill-positivo" : "pill-negativo";
 
                 return `
                     <tr>
                         <td>${fechaTexto}</td>
-                        <td>${ETIQUETAS[e.reactivo]}</td>
+                        <td>${ETIQUETAS_REACTIVO[e.reactivo]}</td>
+                        <td><span class="pill ${clase}">${etiquetaResultado}</span></td>
                         <td>${e.cantidad}</td>
                         <td><button class="fila-historial-eliminar" data-id="${e.id}" type="button">🗑️</button></td>
                     </tr>
@@ -860,23 +1510,17 @@
 
             cuerpo.querySelectorAll(".fila-historial-eliminar").forEach(function (boton) {
                 boton.addEventListener("click", function () {
-                    const id = Number(boton.dataset.id);
-                    entradas = entradas.filter(function (e) { return e.id !== id; });
-                    guardarEntradas();
-                    renderizarTodo();
+                    eliminarEntrada(Number(boton.dataset.id));
                 });
             });
 
         }
 
-        // ------------------------------------------------------------
-        // Render general
-        // ------------------------------------------------------------
-
         function renderizarTodo() {
             renderizarCards();
             renderizarTablaPeriodo();
             renderizarTablaPorcentaje();
+            renderizarTablaResultados();
             renderizarHistorial();
 
             if (typeof twemoji !== "undefined") {
