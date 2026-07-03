@@ -1,50 +1,892 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Estadística Neonatal</title>
-  <link rel="stylesheet" href="style.css" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#0d1114">
+    <title>Estadística de Serología</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
+
+    <!-- Twemoji: dibuja los emojis como imágenes propias en vez de depender
+         de la fuente de emojis del sistema operativo (Windows 7 no la trae) -->
+    <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@17.0.3/dist/twemoji.min.js"
+        integrity="sha384-Y5xukbGJwykbHHkTbLJykYLcBPFxrwipTbEh0puxhkz9CZ90raTPGe2Ks4vCxsYU"
+        crossorigin="anonymous"></script>
+
+    <style>
+        :root {
+            --bg: #0d1114;
+            --bg-panel: #151b1f;
+            --bg-elevated: #1b2227;
+            --border: #262f35;
+            --border-strong: #34404a;
+            --text: #e6ecef;
+            --text-muted: #8a97a0;
+            --text-faint: #5d6a72;
+            --accent: #4dd0c4;
+            --accent-dim: #2b6b64;
+            --accent-glow: rgba(77, 208, 196, 0.18);
+            --ok: #6fcf7a;
+            --warn: #f2b84b;
+            --danger: #ef6461;
+            --danger-bg: rgba(239, 100, 97, 0.12);
+            --radius: 10px;
+            --radius-sm: 6px;
+            --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            color-scheme: dark;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background:
+                radial-gradient(circle at 15% 0%, rgba(77, 208, 196, 0.05), transparent 45%),
+                var(--bg);
+            color: var(--text);
+            font-family: 'Inter', system-ui, sans-serif;
+            font-size: 15px;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        img.emoji {
+            height: 1em;
+            width: 1em;
+            margin: 0 0.05em 0 0.1em;
+            vertical-align: -0.1em;
+            display: inline-block;
+        }
+
+        .contenedor {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 28px 24px 64px;
+        }
+
+        header {
+            margin-bottom: 24px;
+        }
+
+        h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 700;
+            font-size: 1.7rem;
+            letter-spacing: -0.01em;
+            margin: 0 0 4px;
+        }
+
+        .subtitulo {
+            color: var(--text-muted);
+            font-size: 0.88rem;
+            margin: 0;
+        }
+
+        h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 1.05rem;
+            margin: 0 0 16px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 20px 22px;
+            margin-bottom: 20px;
+        }
+
+        /* ---------- formulario ---------- */
+
+        .form-fila {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 14px;
+            align-items: end;
+        }
+
+        label {
+            display: block;
+            font-size: 0.74rem;
+            font-weight: 500;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            margin: 0 0 6px;
+        }
+
+        input,
+        select {
+            width: 100%;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            color: var(--text);
+            font-family: 'Inter', sans-serif;
+            font-size: 0.92rem;
+            padding: 9px 12px;
+        }
+
+        input:focus,
+        select:focus {
+            outline: none;
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px var(--accent-glow);
+        }
+
+        input[type="date"] {
+            color-scheme: dark;
+        }
+
+        select {
+            appearance: none;
+            background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+                linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
+            background-position: calc(100% - 18px) center, calc(100% - 13px) center;
+            background-size: 5px 5px, 5px 5px;
+            background-repeat: no-repeat;
+            padding-right: 34px;
+            cursor: pointer;
+        }
+
+        button {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.86rem;
+            color: var(--text);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-strong);
+            border-radius: var(--radius-sm);
+            padding: 10px 16px;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background: #232c31;
+            border-color: var(--accent-dim);
+        }
+
+        .btn-principal {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: #0a1413;
+            font-weight: 700;
+        }
+
+        .btn-principal:hover {
+            background: #5fe0d3;
+            border-color: #5fe0d3;
+        }
+
+        /* ---------- cards resumen ---------- */
+
+        .cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--bg-panel);
+            border: 1px solid var(--border);
+            border-radius: var(--radius);
+            padding: 16px 18px;
+        }
+
+        .card h3 {
+            margin: 0 0 6px;
+            font-size: 0.76rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .card .valor {
+            font-family: 'JetBrains Mono', monospace;
+            font-weight: 600;
+            font-size: 1.8rem;
+            color: var(--accent);
+        }
+
+        .card .detalle {
+            font-size: 0.74rem;
+            color: var(--text-faint);
+            margin-top: 2px;
+        }
+
+        /* ---------- tabs de periodo ---------- */
+
+        .tabs-periodo {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .tab-periodo {
+            font-family: 'Space Grotesk', sans-serif;
+            font-weight: 600;
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            background: transparent;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 9px 16px;
+        }
+
+        .tab-periodo.activo {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+        }
+
+        /* ---------- tablas ---------- */
+
+        .tabla-scroll {
+            overflow-x: auto;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-family: 'JetBrains Mono', monospace;
+            font-size: 0.82rem;
+        }
+
+        thead th {
+            text-align: left;
+            font-family: 'Inter', sans-serif;
+            font-weight: 600;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.04em;
+            color: var(--text-muted);
+            background: var(--bg-elevated);
+            padding: 10px 12px;
+            border-bottom: 1px solid var(--border-strong);
+            white-space: nowrap;
+        }
+
+        tbody td {
+            padding: 9px 12px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        tbody tr:hover {
+            background: var(--bg-elevated);
+        }
+
+        tfoot td {
+            padding: 9px 12px;
+            font-weight: 600;
+            color: var(--accent);
+            border-top: 1px solid var(--border-strong);
+        }
+
+        .col-total {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .sin-datos {
+            text-align: center;
+            color: var(--text-faint);
+            font-family: 'Inter', sans-serif;
+            padding: 22px !important;
+        }
+
+        .barra-porcentaje {
+            display: inline-block;
+            height: 6px;
+            background: var(--accent);
+            border-radius: 3px;
+            vertical-align: middle;
+            margin-right: 8px;
+        }
+
+        .fila-historial-eliminar {
+            width: auto;
+            padding: 4px 10px;
+            font-size: 0.72rem;
+            border-color: var(--danger);
+            color: var(--danger);
+            background: transparent;
+        }
+
+        .fila-historial-eliminar:hover {
+            background: var(--danger-bg);
+        }
+
+        .acciones-globales {
+            display: flex;
+            justify-content: flex-end;
+            margin-top: 10px;
+        }
+
+        .btn-borrar-todo {
+            width: auto;
+            font-size: 0.76rem;
+            color: var(--text-faint);
+            background: transparent;
+            border-color: var(--border);
+        }
+
+        .btn-borrar-todo:hover {
+            color: var(--danger);
+            border-color: var(--danger);
+            background: var(--danger-bg);
+        }
+
+        ::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--bg);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--border-strong);
+            border-radius: 6px;
+        }
+
+        @media (max-width: 640px) {
+            .contenedor {
+                padding: 20px 14px 48px;
+            }
+
+            h1 {
+                font-size: 1.35rem;
+            }
+
+            input,
+            select,
+            button {
+                font-size: 16px;
+            }
+        }
+    </style>
 </head>
+
 <body>
 
-  <header>
-    <h1>Estadística Neonatal</h1>
-    <p>Sistema de carga, consulta y visualización de datos neonatales</p>
-  </header>
+    <div class="contenedor">
 
-  <main>
-    <section class="card">
-      <h2>Proyecto en preparación</h2>
-      <p>
-        Esta es una maqueta temporal de <strong>Estadística Neonatal</strong>.
-        El sistema definitivo se encuentra en desarrollo y próximamente será reemplazado por la versión completa.
-      </p>
+        <header>
+            <h1>🧫 Estadística de Serología</h1>
+            <p class="subtitulo">VDRL · HIV · Hepatitis B · Toxoplasmosis · Chagas · PCR — cantidad de análisis por
+                semana, mes y año</p>
+        </header>
 
-      <div class="estado">Sitio en construcción</div>
+        <div class="panel">
+            <h2>➕ Cargar análisis</h2>
 
-      <div class="bloques">
-        <div class="bloque">
-          <h3>📋 Registro de datos</h3>
-          <p>Carga de información neonatal y seguimiento de pacientes.</p>
+            <div class="form-fila">
+
+                <div>
+                    <label>Fecha</label>
+                    <input type="date" id="fecha">
+                </div>
+
+                <div>
+                    <label>Reactivo</label>
+                    <select id="reactivo">
+                        <option value="VDRL">VDRL</option>
+                        <option value="HIV">HIV</option>
+                        <option value="HEPATITIS B">Hepatitis B</option>
+                        <option value="TOXOPLASMOSIS">Toxoplasmosis</option>
+                        <option value="CHAGAS">Chagas</option>
+                        <option value="PCR">PCR</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label>Cantidad de análisis</label>
+                    <input type="number" id="cantidad" value="1" min="1">
+                </div>
+
+                <div>
+                    <button class="btn-principal" id="btnAgregar" type="button">➕ Agregar</button>
+                </div>
+
+            </div>
         </div>
 
-        <div class="bloque">
-          <h3>📊 Estadísticas</h3>
-          <p>Visualización de indicadores y reportes para análisis clínico.</p>
+        <div class="cards" id="cards"></div>
+
+        <div class="panel">
+            <h2>📊 Totales por período</h2>
+
+            <div class="tabs-periodo">
+                <button class="tab-periodo activo" data-periodo="semana">Semana</button>
+                <button class="tab-periodo" data-periodo="mes">Mes</button>
+                <button class="tab-periodo" data-periodo="año">Año</button>
+            </div>
+
+            <div class="tabla-scroll">
+                <table id="tablaPeriodo">
+                    <thead>
+                        <tr>
+                            <th>Período</th>
+                            <th>VDRL</th>
+                            <th>HIV</th>
+                            <th>Hep. B</th>
+                            <th>Toxo.</th>
+                            <th>Chagas</th>
+                            <th>PCR</th>
+                            <th>Total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTablaPeriodo"></tbody>
+                </table>
+            </div>
         </div>
 
-        <div class="bloque">
-          <h3>🖨️ Informes</h3>
-          <p>Generación de reportes y documentación para impresión o archivo.</p>
-        </div>
-      </div>
-    </section>
-  </main>
+        <div class="panel">
+            <h2>🥧 Distribución por reactivo (histórico total)</h2>
 
-  <footer>
-    © 2026 Estadística Neonatal - Sitio temporal
-  </footer>
+            <div class="tabla-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Reactivo</th>
+                            <th>Cantidad</th>
+                            <th>% del total</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoTablaPorcentaje"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div class="panel">
+            <h2>📋 Historial de carga</h2>
+
+            <div class="tabla-scroll">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Reactivo</th>
+                            <th>Cantidad</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="cuerpoHistorial"></tbody>
+                </table>
+            </div>
+
+            <div class="acciones-globales">
+                <button class="btn-borrar-todo" id="btnBorrarTodo" type="button">🗑️ Borrar todos los datos</button>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        const REACTIVOS = ["VDRL", "HIV", "HEPATITIS B", "TOXOPLASMOSIS", "CHAGAS", "PCR"];
+        const ETIQUETAS = {
+            "VDRL": "VDRL",
+            "HIV": "HIV",
+            "HEPATITIS B": "Hepatitis B",
+            "TOXOPLASMOSIS": "Toxoplasmosis",
+            "CHAGAS": "Chagas",
+            "PCR": "PCR"
+        };
+        const CLAVE_STORAGE = "serologia_entries";
+
+        let entradas = cargarEntradas();
+
+        // ------------------------------------------------------------
+        // Persistencia (localStorage)
+        // ------------------------------------------------------------
+
+        function cargarEntradas() {
+            try {
+                const datos = localStorage.getItem(CLAVE_STORAGE);
+                return datos ? JSON.parse(datos) : [];
+            } catch (e) {
+                console.error("No se pudo leer el historial guardado:", e);
+                return [];
+            }
+        }
+
+        function guardarEntradas() {
+            try {
+                localStorage.setItem(CLAVE_STORAGE, JSON.stringify(entradas));
+            } catch (e) {
+                console.error("No se pudo guardar el historial:", e);
+                alert("No se pudo guardar el dato. Puede que el almacenamiento del navegador esté lleno o deshabilitado.");
+            }
+        }
+
+        // ------------------------------------------------------------
+        // Utilidades de fecha
+        // ------------------------------------------------------------
+
+        function parsearFecha(fechaISO) {
+            const [y, m, d] = fechaISO.split("-").map(Number);
+            return new Date(y, m - 1, d);
+        }
+
+        function formatearFechaCorta(fecha) {
+            const dia = String(fecha.getDate()).padStart(2, "0");
+            const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+            return `${dia}/${mes}`;
+        }
+
+        function obtenerRangoSemana(fecha) {
+            const diaSemana = fecha.getDay() || 7; // lunes=1 ... domingo=7
+            const lunes = new Date(fecha);
+            lunes.setDate(fecha.getDate() - diaSemana + 1);
+            const domingo = new Date(lunes);
+            domingo.setDate(lunes.getDate() + 6);
+            return { lunes, domingo };
+        }
+
+        function obtenerNumeroSemanaISO(fecha) {
+            const d = new Date(Date.UTC(fecha.getFullYear(), fecha.getMonth(), fecha.getDate()));
+            const diaSemana = d.getUTCDay() || 7;
+            d.setUTCDate(d.getUTCDate() + 4 - diaSemana);
+            const inicioAño = new Date(Date.UTC(d.getUTCFullYear(), 0, 1));
+            const numero = Math.ceil((((d - inicioAño) / 86400000) + 1) / 7);
+            return { año: d.getUTCFullYear(), semana: numero };
+        }
+
+        function claveSemana(fecha) {
+            const { año, semana } = obtenerNumeroSemanaISO(fecha);
+            return `${año}-S${String(semana).padStart(2, "0")}`;
+        }
+
+        function etiquetaSemana(fecha) {
+            const { lunes, domingo } = obtenerRangoSemana(fecha);
+            const { semana } = obtenerNumeroSemanaISO(fecha);
+            return `Sem. ${semana} (${formatearFechaCorta(lunes)} al ${formatearFechaCorta(domingo)})`;
+        }
+
+        const NOMBRES_MES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+
+        function claveMes(fecha) {
+            return `${fecha.getFullYear()}-${String(fecha.getMonth() + 1).padStart(2, "0")}`;
+        }
+
+        function etiquetaMes(fecha) {
+            return `${NOMBRES_MES[fecha.getMonth()]} ${fecha.getFullYear()}`;
+        }
+
+        function claveAño(fecha) {
+            return String(fecha.getFullYear());
+        }
+
+        // ------------------------------------------------------------
+        // Formulario
+        // ------------------------------------------------------------
+
+        const inputFecha = document.getElementById("fecha");
+        const inputReactivo = document.getElementById("reactivo");
+        const inputCantidad = document.getElementById("cantidad");
+        const btnAgregar = document.getElementById("btnAgregar");
+
+        function fechaHoyISO() {
+            const hoy = new Date();
+            const y = hoy.getFullYear();
+            const m = String(hoy.getMonth() + 1).padStart(2, "0");
+            const d = String(hoy.getDate()).padStart(2, "0");
+            return `${y}-${m}-${d}`;
+        }
+
+        inputFecha.value = fechaHoyISO();
+
+        btnAgregar.addEventListener("click", function () {
+
+            const fecha = inputFecha.value;
+            const reactivo = inputReactivo.value;
+            const cantidad = Number(inputCantidad.value);
+
+            if (!fecha) {
+                alert("Elegí una fecha.");
+                return;
+            }
+
+            if (!cantidad || cantidad <= 0) {
+                alert("La cantidad debe ser mayor que cero.");
+                return;
+            }
+
+            entradas.push({
+                id: Date.now(),
+                fecha: fecha,
+                reactivo: reactivo,
+                cantidad: cantidad
+            });
+
+            guardarEntradas();
+            inputCantidad.value = 1;
+            renderizarTodo();
+
+        });
+
+        document.getElementById("btnBorrarTodo").addEventListener("click", function () {
+
+            if (entradas.length === 0) return;
+
+            const confirmar = confirm("¿Borrar todo el historial cargado? Esta acción no se puede deshacer.");
+            if (!confirmar) return;
+
+            entradas = [];
+            guardarEntradas();
+            renderizarTodo();
+
+        });
+
+        // ------------------------------------------------------------
+        // Cards resumen
+        // ------------------------------------------------------------
+
+        function totalEnRango(desde, hasta) {
+            return entradas
+                .filter(function (e) {
+                    const f = parsearFecha(e.fecha);
+                    return f >= desde && f <= hasta;
+                })
+                .reduce(function (acc, e) { return acc + e.cantidad; }, 0);
+        }
+
+        function renderizarCards() {
+
+            const hoy = new Date();
+            const { lunes, domingo } = obtenerRangoSemana(hoy);
+            const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
+            const finMes = new Date(hoy.getFullYear(), hoy.getMonth() + 1, 0);
+            const inicioAño = new Date(hoy.getFullYear(), 0, 1);
+            const finAño = new Date(hoy.getFullYear(), 11, 31);
+
+            const totalSemana = totalEnRango(lunes, domingo);
+            const totalMes = totalEnRango(inicioMes, finMes);
+            const totalAño = totalEnRango(inicioAño, finAño);
+            const totalHistorico = entradas.reduce(function (acc, e) { return acc + e.cantidad; }, 0);
+
+            document.getElementById("cards").innerHTML = `
+                <div class="card">
+                    <h3>📅 Esta semana</h3>
+                    <div class="valor">${totalSemana}</div>
+                    <div class="detalle">${formatearFechaCorta(lunes)} al ${formatearFechaCorta(domingo)}</div>
+                </div>
+                <div class="card">
+                    <h3>🗓️ Este mes</h3>
+                    <div class="valor">${totalMes}</div>
+                    <div class="detalle">${NOMBRES_MES[hoy.getMonth()]} ${hoy.getFullYear()}</div>
+                </div>
+                <div class="card">
+                    <h3>📆 Este año</h3>
+                    <div class="valor">${totalAño}</div>
+                    <div class="detalle">${hoy.getFullYear()}</div>
+                </div>
+                <div class="card">
+                    <h3>🗃️ Total histórico</h3>
+                    <div class="valor">${totalHistorico}</div>
+                    <div class="detalle">${entradas.length} carga${entradas.length === 1 ? "" : "s"}</div>
+                </div>
+            `;
+
+        }
+
+        // ------------------------------------------------------------
+        // Tabla por período (semana / mes / año)
+        // ------------------------------------------------------------
+
+        let periodoActivo = "semana";
+
+        document.querySelectorAll(".tab-periodo").forEach(function (boton) {
+            boton.addEventListener("click", function () {
+                document.querySelectorAll(".tab-periodo").forEach(function (b) { b.classList.remove("activo"); });
+                boton.classList.add("activo");
+                periodoActivo = boton.dataset.periodo;
+                renderizarTablaPeriodo();
+            });
+        });
+
+        function renderizarTablaPeriodo() {
+
+            const cuerpo = document.getElementById("cuerpoTablaPeriodo");
+
+            if (entradas.length === 0) {
+                cuerpo.innerHTML = `<tr><td colspan="8" class="sin-datos">Todavía no cargaste ningún análisis.</td></tr>`;
+                return;
+            }
+
+            const grupos = {};
+
+            entradas.forEach(function (e) {
+
+                const fecha = parsearFecha(e.fecha);
+                let clave, etiqueta, ordenar;
+
+                if (periodoActivo === "semana") {
+                    clave = claveSemana(fecha);
+                    etiqueta = etiquetaSemana(fecha);
+                } else if (periodoActivo === "mes") {
+                    clave = claveMes(fecha);
+                    etiqueta = etiquetaMes(fecha);
+                } else {
+                    clave = claveAño(fecha);
+                    etiqueta = claveAño(fecha);
+                }
+
+                if (!grupos[clave]) {
+                    grupos[clave] = { etiqueta: etiqueta, orden: fecha.getTime(), porReactivo: {} };
+                    REACTIVOS.forEach(function (r) { grupos[clave].porReactivo[r] = 0; });
+                }
+
+                grupos[clave].porReactivo[e.reactivo] += e.cantidad;
+
+            });
+
+            const filas = Object.values(grupos).sort(function (a, b) { return b.orden - a.orden; });
+
+            cuerpo.innerHTML = filas.map(function (fila) {
+
+                const total = REACTIVOS.reduce(function (acc, r) { return acc + fila.porReactivo[r]; }, 0);
+
+                const celdas = REACTIVOS.map(function (r) {
+                    return `<td>${fila.porReactivo[r] || 0}</td>`;
+                }).join("");
+
+                return `<tr><td>${fila.etiqueta}</td>${celdas}<td class="col-total">${total}</td></tr>`;
+
+            }).join("");
+
+        }
+
+        // ------------------------------------------------------------
+        // Tabla de porcentaje (distribución histórica total)
+        // ------------------------------------------------------------
+
+        function renderizarTablaPorcentaje() {
+
+            const cuerpo = document.getElementById("cuerpoTablaPorcentaje");
+
+            const totalHistorico = entradas.reduce(function (acc, e) { return acc + e.cantidad; }, 0);
+
+            if (totalHistorico === 0) {
+                cuerpo.innerHTML = `<tr><td colspan="3" class="sin-datos">Todavía no hay datos para calcular porcentajes.</td></tr>`;
+                return;
+            }
+
+            const totalesPorReactivo = {};
+            REACTIVOS.forEach(function (r) { totalesPorReactivo[r] = 0; });
+
+            entradas.forEach(function (e) {
+                totalesPorReactivo[e.reactivo] += e.cantidad;
+            });
+
+            cuerpo.innerHTML = REACTIVOS
+                .slice()
+                .sort(function (a, b) { return totalesPorReactivo[b] - totalesPorReactivo[a]; })
+                .map(function (r) {
+
+                    const cantidad = totalesPorReactivo[r];
+                    const porcentaje = ((cantidad / totalHistorico) * 100).toFixed(1);
+
+                    return `
+                        <tr>
+                            <td>${ETIQUETAS[r]}</td>
+                            <td>${cantidad}</td>
+                            <td>
+                                <span class="barra-porcentaje" style="width:${Math.max(porcentaje, 2)}px"></span>${porcentaje}%
+                            </td>
+                        </tr>
+                    `;
+
+                }).join("");
+
+        }
+
+        // ------------------------------------------------------------
+        // Historial de carga
+        // ------------------------------------------------------------
+
+        function renderizarHistorial() {
+
+            const cuerpo = document.getElementById("cuerpoHistorial");
+
+            if (entradas.length === 0) {
+                cuerpo.innerHTML = `<tr><td colspan="4" class="sin-datos">Sin cargas todavía.</td></tr>`;
+                return;
+            }
+
+            const ordenadas = entradas.slice().sort(function (a, b) {
+                return parsearFecha(b.fecha) - parsearFecha(a.fecha) || b.id - a.id;
+            });
+
+            cuerpo.innerHTML = ordenadas.map(function (e) {
+
+                const fecha = parsearFecha(e.fecha);
+                const fechaTexto = `${formatearFechaCorta(fecha)}/${fecha.getFullYear()}`;
+
+                return `
+                    <tr>
+                        <td>${fechaTexto}</td>
+                        <td>${ETIQUETAS[e.reactivo]}</td>
+                        <td>${e.cantidad}</td>
+                        <td><button class="fila-historial-eliminar" data-id="${e.id}" type="button">🗑️</button></td>
+                    </tr>
+                `;
+
+            }).join("");
+
+            cuerpo.querySelectorAll(".fila-historial-eliminar").forEach(function (boton) {
+                boton.addEventListener("click", function () {
+                    const id = Number(boton.dataset.id);
+                    entradas = entradas.filter(function (e) { return e.id !== id; });
+                    guardarEntradas();
+                    renderizarTodo();
+                });
+            });
+
+        }
+
+        // ------------------------------------------------------------
+        // Render general
+        // ------------------------------------------------------------
+
+        function renderizarTodo() {
+            renderizarCards();
+            renderizarTablaPeriodo();
+            renderizarTablaPorcentaje();
+            renderizarHistorial();
+
+            if (typeof twemoji !== "undefined") {
+                twemoji.parse(document.body, { folder: "svg", ext: ".svg" });
+            }
+        }
+
+        renderizarTodo();
+    </script>
 
 </body>
+
 </html>
