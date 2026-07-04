@@ -107,10 +107,12 @@ function iniciarEscuchaDatos() {
             return String(fecha.getFullYear());
         }
 
+        const inputDni = document.getElementById("dni");
+        const inputApellido = document.getElementById("apellido");
+        const inputNombre = document.getElementById("nombre");
         const inputFecha = document.getElementById("fecha");
         const inputReactivo = document.getElementById("reactivo");
         const inputResultado = document.getElementById("resultado");
-        const inputCantidad = document.getElementById("cantidad");
         const btnAgregar = document.getElementById("btnAgregar");
 
         function fechaHoyISO() {
@@ -134,20 +136,46 @@ function iniciarEscuchaDatos() {
         inputReactivo.addEventListener("change", actualizarOpcionesResultado);
         actualizarOpcionesResultado();
 
+        // si el DNI ya se cargó antes, autocompleta Apellido y Nombre
+        // (mismo criterio que el código de barras en StockLab)
+        inputDni.addEventListener("blur", function () {
+
+            const dni = inputDni.value.trim();
+            if (!dni) return;
+
+            const anterior = entradas
+                .slice()
+                .reverse()
+                .find(function (e) { return e.dni === dni; });
+
+            if (anterior) {
+                inputApellido.value = anterior.apellido;
+                inputNombre.value = anterior.nombre;
+            }
+
+        });
+
         btnAgregar.addEventListener("click", async function () {
 
+            const dni = inputDni.value.trim();
+            const apellido = inputApellido.value.trim();
+            const nombre = inputNombre.value.trim();
             const fecha = inputFecha.value;
             const reactivo = inputReactivo.value;
             const resultado = inputResultado.value;
-            const cantidad = Number(inputCantidad.value);
 
-            if (!fecha) {
-                alert("Elegí una fecha.");
+            if (!dni) {
+                alert("Ingresá el DNI del paciente.");
                 return;
             }
 
-            if (!cantidad || cantidad <= 0) {
-                alert("La cantidad debe ser mayor que cero.");
+            if (!apellido || !nombre) {
+                alert("Ingresá apellido y nombre del paciente.");
+                return;
+            }
+
+            if (!fecha) {
+                alert("Elegí una fecha.");
                 return;
             }
 
@@ -157,15 +185,19 @@ function iniciarEscuchaDatos() {
 
                 const entrada = {
                     id: Date.now(),
+                    dni: dni,
+                    apellido: apellido,
+                    nombre: nombre,
                     fecha: fecha,
                     reactivo: reactivo,
                     resultado: resultado,
-                    cantidad: cantidad
+                    cantidad: 1
                 };
 
                 await db.collection(COLECCION).doc(String(entrada.id)).set(entrada);
 
-                inputCantidad.value = 1;
+                // se dejan DNI/Apellido/Nombre cargados por si hay que
+                // agregarle otro análisis al mismo paciente a continuación
 
             } catch (error) {
                 console.error(error);
@@ -418,7 +450,7 @@ function iniciarEscuchaDatos() {
             const cuerpo = document.getElementById("cuerpoHistorial");
 
             if (entradas.length === 0) {
-                cuerpo.innerHTML = `<tr><td colspan="5" class="sin-datos">Sin cargas todavía.</td></tr>`;
+                cuerpo.innerHTML = `<tr><td colspan="7" class="sin-datos">Sin cargas todavía.</td></tr>`;
                 return;
             }
 
@@ -438,9 +470,11 @@ function iniciarEscuchaDatos() {
                 return `
                     <tr>
                         <td>${fechaTexto}</td>
+                        <td>${e.dni || ""}</td>
+                        <td>${e.apellido || ""}</td>
+                        <td>${e.nombre || ""}</td>
                         <td>${ETIQUETAS_REACTIVO[e.reactivo]}</td>
                         <td><span class="pill ${clase}">${etiquetaResultado}</span></td>
-                        <td>${e.cantidad}</td>
                         <td><button class="fila-historial-eliminar" data-id="${e.id}" type="button">🗑️</button></td>
                     </tr>
                 `;
