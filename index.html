@@ -109,6 +109,12 @@
                 </div>
             </header>
 
+            <div class="vista-tabs">
+                <button class="vista-tab activo" id="tabSerologia" type="button">📊 Serología</button>
+                <button class="vista-tab" id="tabPacientes" type="button">👥 Pacientes</button>
+            </div>
+
+            <div id="vistaSerologia">
             <div class="panel">
                 <h2>➕ Cargar análisis</h2>
 
@@ -255,6 +261,66 @@
 
         </div>
 
+            <div id="vistaPacientes" style="display:none;">
+                <div class="panel">
+                    <h2>👤 Agregar paciente</h2>
+                    <div class="form-fila pacientes-form-grid">
+                        <div><label>DNI</label><input type="text" id="pacienteDni" placeholder="Ej: 12345678" inputmode="numeric"></div>
+                        <div><label>Apellido</label><input type="text" id="pacienteApellido" placeholder="Apellido"></div>
+                        <div><label>Nombre</label><input type="text" id="pacienteNombre" placeholder="Nombre"></div>
+                    </div>
+                    <div class="pacientes-analisis-bloque">
+                        <label>Análisis (seleccionar los que correspondan)</label>
+                        <div class="analisis-grid" id="pacientesAnalisisGrid">
+                            <label class="analisis-chip"><input type="checkbox" value="VDRL"><span>VDRL</span></label>
+                            <label class="analisis-chip"><input type="checkbox" value="HIV"><span>HIV</span></label>
+                            <label class="analisis-chip"><input type="checkbox" value="HEPATITIS B"><span>Hepatitis B</span></label>
+                            <label class="analisis-chip"><input type="checkbox" value="TOXOPLASMOSIS"><span>Toxoplasmosis</span></label>
+                            <label class="analisis-chip"><input type="checkbox" value="CHAGAS"><span>Chagas</span></label>
+                            <label class="analisis-chip"><input type="checkbox" value="PCR"><span>PCR</span></label>
+                        </div>
+                    </div>
+                    <div class="pacientes-acciones-superior">
+                        <button class="btn-principal" id="btnAgregarPacientePlanilla" type="button">➕ Agregar a planilla</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <div class="pacientes-header-panel">
+                        <h2>📋 Pacientes agregados a la planilla</h2>
+                        <div class="acciones-globales acciones-pacientes">
+                            <button class="btn-secundario" id="btnLimpiarPlanilla" type="button">🗑️ Limpiar lista</button>
+                            <button class="btn-principal" id="btnDescargarPlanillaPacientes" type="button">📄 Descargar planilla PDF</button>
+                        </div>
+                    </div>
+                    <div class="tabla-scroll">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>N°</th>
+                                    <th>DNI</th>
+                                    <th>Apellido</th>
+                                    <th>Nombre</th>
+                                    <th>VDRL</th>
+                                    <th>HIV</th>
+                                    <th>Hepatitis B</th>
+                                    <th>Toxoplasmosis</th>
+                                    <th>Chagas</th>
+                                    <th>PCR</th>
+                                    <th>Acciones</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cuerpoTablaPacientesPlanilla">
+                                <tr><td colspan="11" class="sin-datos">Todavía no agregaste pacientes a la planilla.</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pacientes-leyenda">En la tabla: <strong>✓</strong> = análisis seleccionado para ese paciente. <strong>✕</strong> = no corresponde realizarlo. En el PDF, los seleccionados quedan vacíos para escribir el resultado y los no seleccionados salen con rayita.</div>
+                </div>
+            </div>
+
+        </div>
+
     </div>
 
     <div id="modalAdmin" class="modal-admin">
@@ -270,15 +336,16 @@
 
         </div>
     </div>
-    <script src="js/firebase-config.js"></script>
-    <script src="js/serologia.js"></script>
+<script src="js/firebase-config.js"></script>
+<script src="js/serologia.js"></script>
+<script src="js/pacientes.js"></script>
 
-    <!-- jsPDF + autoTable, necesarios para js/pdf.js -->
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.0.0/jspdf.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/5.0.2/jspdf.plugin.autotable.min.js"></script>
-    <script src="js/pdf.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/4.0.0/jspdf.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/5.0.2/jspdf.plugin.autotable.min.js"></script>
+<script src="js/pdf.js"></script>
+<script src="js/planillas.js"></script>
 
-    <script src="js/auth.js"></script>
+<script src="js/auth.js"></script>
 
 </body>
 
