@@ -165,7 +165,8 @@ function generarPDF() {
             e.apellido || "",
             e.nombre || "",
             ETIQUETAS_REACTIVO[e.reactivo],
-            etiquetaResultado
+            etiquetaResultado,
+            e.titulo || "—"
         ];
 
     });
@@ -173,8 +174,8 @@ function generarPDF() {
     pdf.autoTable({
         startY: inicioHistorial + 5,
         margin: { left: 15, right: 15 },
-        head: [["Fecha", "DNI", "Apellido", "Nombre", "Reactivo", "Resultado"]],
-        body: filasHistorial.length > 0 ? filasHistorial : [["—", "—", "—", "—", "—", "—"]],
+        head: [["Fecha", "DNI", "Apellido", "Nombre", "Reactivo", "Resultado", "Título"]],
+        body: filasHistorial.length > 0 ? filasHistorial : [["—", "—", "—", "—", "—", "—", "—"]],
         theme: "grid",
         headStyles: { fillColor: [40, 48, 54], textColor: 255, fontStyle: "bold", halign: "center" },
         styles: { fontSize: 8, cellPadding: 2, halign: "center", valign: "middle" }
