@@ -1,6 +1,8 @@
 const REACTIVOS_PLANILLA = ["VDRL", "HIV", "HEPATITIS B", "TOXOPLASMOSIS", "CHAGAS", "PCR"];
+const COLECCION_PLANILLA = "planillaPacientes";
 
 let pacientesPlanilla = [];
+let listenerPlanilla = null;
 
 const btnTabSerologia = document.getElementById("tabSerologia");
 const btnTabPacientes = document.getElementById("tabPacientes");
@@ -16,6 +18,55 @@ const btnAgregarPacientePlanilla = document.getElementById("btnAgregarPacientePl
 const btnLimpiarPlanilla = document.getElementById("btnLimpiarPlanilla");
 const cuerpoTablaPacientes = document.getElementById("cuerpoTablaPacientesPlanilla");
 const gridAnalisisPacientes = document.getElementById("pacientesAnalisisGrid");
+
+// ============================================================
+// Sincronización en tiempo real con Firestore
+// ============================================================
+
+function iniciarEscuchaPlanilla() {
+
+    listenerPlanilla = db.collection(COLECCION_PLANILLA)
+        .orderBy("id", "asc")
+        .onSnapshot(function (snapshot) {
+
+            pacientesPlanilla = [];
+            snapshot.forEach(function (docSnap) {
+                pacientesPlanilla.push(docSnap.data());
+            });
+
+            renderizarTablaPacientes();
+
+        }, function (error) {
+            console.error("Error escuchando la planilla de pacientes:", error);
+        });
+
+}
+
+// se engancha a la sesión de forma independiente de auth.js, para no
+// tener que tocar ese archivo (ya anda bien, mejor no arriesgarlo)
+auth.onAuthStateChanged(async function (user) {
+
+    if (listenerPlanilla) {
+        listenerPlanilla();
+        listenerPlanilla = null;
+    }
+
+    if (!user) return;
+
+    try {
+        const doc = await db.collection("usuarios").doc(user.uid).get();
+        if (doc.exists && doc.data().aprobado === true) {
+            iniciarEscuchaPlanilla();
+        }
+    } catch (error) {
+        console.error(error);
+    }
+
+});
+
+// ============================================================
+// Pestañas Serología / Pacientes
+// ============================================================
 
 function mostrarVista(nombreVista) {
     if (!vistaSerologia || !vistaPacientes) return;
@@ -141,34 +192,65 @@ function construirPacientePlanilla() {
     };
 }
 
-function agregarPacienteAPlanilla() {
+async function agregarPacienteAPlanilla() {
+
     const paciente = construirPacientePlanilla();
     if (!paciente) return;
 
-    pacientesPlanilla.push(paciente);
-    renderizarTablaPacientes();
-    limpiarFormularioPaciente();
+    if (btnAgregarPacientePlanilla) btnAgregarPacientePlanilla.disabled = true;
+
+    try {
+        await db.collection(COLECCION_PLANILLA).doc(String(paciente.id)).set(paciente);
+        limpiarFormularioPaciente();
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo agregar el paciente a la planilla: " + error.message);
+    } finally {
+        if (btnAgregarPacientePlanilla) btnAgregarPacientePlanilla.disabled = false;
+    }
+
 }
 
 if (btnAgregarPacientePlanilla) {
     btnAgregarPacientePlanilla.addEventListener("click", agregarPacienteAPlanilla);
 }
 
-function eliminarPacientePlanilla(id) {
-    pacientesPlanilla = pacientesPlanilla.filter(function (p) {
-        return p.id !== id;
-    });
-    renderizarTablaPacientes();
+async function eliminarPacientePlanilla(id) {
+    try {
+        await db.collection(COLECCION_PLANILLA).doc(String(id)).delete();
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo eliminar el paciente: " + error.message);
+    }
 }
 
-function limpiarPlanillaPacientes() {
+async function limpiarPlanillaPacientes() {
+
     if (pacientesPlanilla.length === 0) return;
 
-    const confirmar = confirm("¿Vaciar la planilla de pacientes?");
+    const confirmar = confirm("¿Vaciar la planilla de pacientes? Esta acción no se puede deshacer y afecta a todos los usuarios.");
     if (!confirmar) return;
 
-    pacientesPlanilla = [];
-    renderizarTablaPacientes();
+    try {
+
+        const grupos = [];
+        for (let i = 0; i < pacientesPlanilla.length; i += 450) {
+            grupos.push(pacientesPlanilla.slice(i, i + 450));
+        }
+
+        for (const grupo of grupos) {
+            const lote = db.batch();
+            grupo.forEach(function (paciente) {
+                lote.delete(db.collection(COLECCION_PLANILLA).doc(String(paciente.id)));
+            });
+            await lote.commit();
+        }
+
+    } catch (error) {
+        console.error(error);
+        alert("No se pudo vaciar la planilla: " + error.message);
+    }
+
 }
 
 if (btnLimpiarPlanilla) {
@@ -220,6 +302,10 @@ function renderizarTablaPacientes() {
             eliminarPacientePlanilla(Number(boton.dataset.id));
         });
     });
+
+    if (typeof twemoji !== "undefined") {
+        twemoji.parse(cuerpoTablaPacientes, { folder: "svg", ext: ".svg" });
+    }
 }
 
 window.obtenerPacientesPlanilla = function () {
