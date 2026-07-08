@@ -5,7 +5,6 @@ if (btnDescargarPlanillaPacientes) {
 }
 
 function generarPlanillaPacientesPDF() {
-
     if (typeof window.obtenerPacientesPlanilla !== "function") {
         alert("No se pudo leer la planilla de pacientes.");
         return;
@@ -28,38 +27,25 @@ function generarPlanillaPacientesPDF() {
 
     const anchoPagina = pdf.internal.pageSize.getWidth();
     const altoPagina = pdf.internal.pageSize.getHeight();
-    const margen = 14;
+    const margen = 10;
 
     const ahora = new Date();
     const fechaTexto = ahora.toLocaleDateString();
     const horaTexto = ahora.toLocaleTimeString();
 
-    // ------------------------------------------------------------
-    // Encabezado
-    // ------------------------------------------------------------
-
     pdf.setFont("helvetica", "bold");
-    pdf.setFontSize(16);
+    pdf.setFontSize(15);
     pdf.setTextColor(20, 20, 20);
-    pdf.text("PLANILLA DE TRABAJO — SEROLOGÍA", anchoPagina / 2, 16, { align: "center" });
+    pdf.text("PLANILLA DE TRABAJO — SEROLOGÍA", anchoPagina / 2, 15, { align: "center" });
 
     pdf.setFont("helvetica", "normal");
-    pdf.setFontSize(9.5);
+    pdf.setFontSize(9);
     pdf.setTextColor(90, 90, 90);
-    pdf.text(`Generado el ${fechaTexto} a las ${horaTexto}  ·  ${pacientes.length} paciente${pacientes.length === 1 ? "" : "s"}`, anchoPagina / 2, 22, { align: "center" });
+    pdf.text(`Generado el ${fechaTexto} a las ${horaTexto} · ${pacientes.length} paciente${pacientes.length === 1 ? "" : "s"}`, anchoPagina / 2, 21, { align: "center" });
 
     pdf.setDrawColor(180, 180, 180);
     pdf.setLineWidth(0.3);
-    pdf.line(margen, 27, anchoPagina - margen, 27);
-
-    // ------------------------------------------------------------
-    // Tabla de pacientes
-    //
-    // Los anchos de columna se dejan que los calcule autoTable en
-    // base al contenido (más robusto que fijarlos a mano), salvo un
-    // ancho mínimo para Apellido/Nombre para que no queden angostas
-    // si hay nombres cortos en la página.
-    // ------------------------------------------------------------
+    pdf.line(margen, 25, anchoPagina - margen, 25);
 
     const filas = pacientes.map(function (p, index) {
         return [
@@ -68,25 +54,23 @@ function generarPlanillaPacientesPDF() {
             p.apellido,
             p.nombre,
             p.analisis["VDRL"] ? "" : "—",
-            p.analisis["HIV"] ? "" : "—",
-            p.analisis["HEPATITIS B"] ? "" : "—",
-            p.analisis["TOXOPLASMOSIS"] ? "" : "—",
-            p.analisis["CHAGAS"] ? "" : "—",
-            p.analisis["PCR"] ? "" : "—"
+            p.analisis["TPPA ELISA"] ? "" : "—",
+            p.analisis["HIV ELISA"] ? "" : "—",
+            p.analisis["TOXOPLASMOSIS HAI"] ? "" : "—",
+            p.analisis["CHAGAS HAI"] ? "" : "—",
+            p.analisis["CHAGAS ELISA"] ? "" : "—",
+            p.analisis["HEPATITIS B ELISA"] ? "" : "—"
         ];
     });
 
     pdf.autoTable({
-
-        startY: 33,
+        startY: 30,
         margin: { left: margen, right: margen },
         tableWidth: "auto",
-
         head: [[
             "N°", "DNI", "APELLIDO", "NOMBRE",
-            "VDRL", "HIV", "HEP. B", "TOXO", "CHAGAS", "PCR"
+            "VDRL", "TPPA", "HIV", "TOXO HAI", "CHAGAS HAI", "CHAGAS ELISA", "HEP. B"
         ]],
-
         body: filas,
         theme: "grid",
 
@@ -94,58 +78,54 @@ function generarPlanillaPacientesPDF() {
             fillColor: [30, 41, 45],
             textColor: 255,
             fontStyle: "bold",
-            fontSize: 9.5,
+            fontSize: 8,
             halign: "center",
             valign: "middle",
-            cellPadding: 3.2
+            cellPadding: 2.5
         },
 
         bodyStyles: {
-            fontSize: 10,
+            fontSize: 8.6,
             textColor: [25, 25, 25],
             halign: "center",
             valign: "middle",
-            cellPadding: 3.5,
+            cellPadding: 2.8,
             lineColor: [215, 215, 215],
             lineWidth: 0.2,
-            minCellHeight: 9
+            minCellHeight: 8
         },
 
         columnStyles: {
-            0: { halign: "center", cellWidth: 10, fontStyle: "normal", textColor: [140, 140, 140] },
-            1: { halign: "center", minCellWidth: 24, fontStyle: "bold" },
-            2: { halign: "left", minCellWidth: 34, fontStyle: "bold" },
-            3: { halign: "left", minCellWidth: 34, fontStyle: "bold" }
+            0: { halign: "center", cellWidth: 9, fontStyle: "normal", textColor: [140, 140, 140] },
+            1: { halign: "center", cellWidth: 22, fontStyle: "bold" },
+            2: { halign: "left", cellWidth: 28, fontStyle: "bold" },
+            3: { halign: "left", cellWidth: 28, fontStyle: "bold" },
+            4: { cellWidth: 16 },
+            5: { cellWidth: 18 },
+            6: { cellWidth: 16 },
+            7: { cellWidth: 20 },
+            8: { cellWidth: 24 },
+            9: { cellWidth: 26 },
+            10: { cellWidth: 20 }
         },
 
-        // las celdas "en blanco" (a completar a mano) se resaltan apenas,
-        // para que salten a la vista dónde hay que escribir el resultado
         didParseCell: function (data) {
             if (data.section === "body" && data.column.index >= 4 && data.cell.raw === "") {
                 data.cell.styles.fillColor = [246, 250, 249];
             }
         }
-
     });
-
-    // ------------------------------------------------------------
-    // Referencia
-    // ------------------------------------------------------------
 
     const finTabla = pdf.lastAutoTable.finalY;
 
     pdf.setFont("helvetica", "italic");
-    pdf.setFontSize(8.5);
+    pdf.setFontSize(8.2);
     pdf.setTextColor(110, 110, 110);
     pdf.text(
-        "Celda en blanco = análisis a realizar (completar resultado a mano)   ·   — = análisis no solicitado",
+        "Celda en blanco = análisis a realizar (completar resultado a mano) · — = análisis no solicitado",
         margen,
         finTabla + 6
     );
-
-    // ------------------------------------------------------------
-    // Firma / validación (pie de página)
-    // ------------------------------------------------------------
 
     const yFirma = altoPagina - 22;
 
@@ -161,10 +141,6 @@ function generarPlanillaPacientesPDF() {
     pdf.text("Bioquímico/a responsable", margen, yFirma + 5);
     pdf.text("Fecha de realización", anchoPagina - margen - 70, yFirma + 5);
 
-    // ------------------------------------------------------------
-    // Guardar
-    // ------------------------------------------------------------
-
     const año = ahora.getFullYear();
     const mes = String(ahora.getMonth() + 1).padStart(2, "0");
     const dia = String(ahora.getDate()).padStart(2, "0");
@@ -173,5 +149,4 @@ function generarPlanillaPacientesPDF() {
 
     const nombrePDF = `PlanillaTrabajoSerologia_${año}-${mes}-${dia}_${hora}-${minutos}.pdf`;
     pdf.save(nombrePDF);
-
 }
