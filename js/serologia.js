@@ -1,23 +1,33 @@
 const COLECCION = "analisisSerologia";
 
-const REACTIVOS = ["VDRL", "HIV", "HEPATITIS B", "TOXOPLASMOSIS", "CHAGAS", "PCR"];
+const REACTIVOS = [
+    "VDRL",
+    "TPPA ELISA",
+    "HIV ELISA",
+    "TOXOPLASMOSIS HAI",
+    "CHAGAS HAI",
+    "CHAGAS ELISA",
+    "HEPATITIS B ELISA"
+];
 
 const ETIQUETAS_REACTIVO = {
     "VDRL": "VDRL",
-    "HIV": "HIV",
-    "HEPATITIS B": "Hepatitis B",
-    "TOXOPLASMOSIS": "Toxoplasmosis",
-    "CHAGAS": "Chagas",
-    "PCR": "PCR"
+    "TPPA ELISA": "TPPA ELISA",
+    "HIV ELISA": "HIV ELISA",
+    "TOXOPLASMOSIS HAI": "Toxoplasmosis HAI",
+    "CHAGAS HAI": "Chagas HAI",
+    "CHAGAS ELISA": "Chagas ELISA",
+    "HEPATITIS B ELISA": "Hepatitis B ELISA"
 };
 
 const GRUPOS_RESULTADO = {
     "VDRL": "REACTIVO_NOREACTIVO",
-    "HIV": "REACTIVO_NOREACTIVO",
-    "HEPATITIS B": "REACTIVO_NOREACTIVO",
-    "TOXOPLASMOSIS": "POSITIVO_NEGATIVO",
-    "CHAGAS": "POSITIVO_NEGATIVO",
-    "PCR": "POSITIVO_NEGATIVO"
+    "TPPA ELISA": "REACTIVO_NOREACTIVO",
+    "HIV ELISA": "REACTIVO_NOREACTIVO",
+    "HEPATITIS B ELISA": "REACTIVO_NOREACTIVO",
+    "TOXOPLASMOSIS HAI": "POSITIVO_NEGATIVO",
+    "CHAGAS HAI": "POSITIVO_NEGATIVO",
+    "CHAGAS ELISA": "POSITIVO_NEGATIVO"
 };
 
 const OPCIONES_RESULTADO = {
@@ -34,22 +44,17 @@ const OPCIONES_RESULTADO = {
 let entradas = [];
 
 function iniciarEscuchaDatos() {
-
     listenerMovimientos = db.collection(COLECCION)
         .orderBy("id", "asc")
         .onSnapshot(function (snapshot) {
-
             entradas = [];
             snapshot.forEach(function (docSnap) {
                 entradas.push(docSnap.data());
             });
-
             renderizarTodo();
-
         }, function (error) {
             console.error("Error escuchando datos:", error);
         });
-
 }
 
 function parsearFecha(fechaISO) {
@@ -127,21 +132,21 @@ function fechaHoyISO() {
 
 inputFecha.value = fechaHoyISO();
 
-// El campo Título/Dilución solo tiene sentido cuando el resultado "confirma"
-// algo: VDRL Reactivo, o Toxoplasmosis/Chagas/PCR Positivo. HIV y Hepatitis B
-// no llevan título.
 function requiereTitulo(reactivo, resultado) {
     if (reactivo === "VDRL" && resultado === "REACTIVO") return true;
-    if ((reactivo === "TOXOPLASMOSIS" || reactivo === "CHAGAS" || reactivo === "PCR") && resultado === "POSITIVO") return true;
+    if (
+        (reactivo === "TOXOPLASMOSIS HAI" ||
+         reactivo === "CHAGAS HAI" ||
+         reactivo === "CHAGAS ELISA") &&
+        resultado === "POSITIVO"
+    ) return true;
     return false;
 }
 
 function actualizarVisibilidadTitulo() {
     const mostrar = requiereTitulo(inputReactivo.value, inputResultado.value);
     campoTitulo.style.display = mostrar ? "block" : "none";
-    if (!mostrar) {
-        inputTitulo.value = "";
-    }
+    if (!mostrar) inputTitulo.value = "";
 }
 
 function actualizarOpcionesResultado() {
@@ -157,10 +162,7 @@ inputReactivo.addEventListener("change", actualizarOpcionesResultado);
 inputResultado.addEventListener("change", actualizarVisibilidadTitulo);
 actualizarOpcionesResultado();
 
-// si el DNI ya se cargó antes, autocompleta Apellido y Nombre
-// (mismo criterio que el código de barras en StockLab)
 inputDni.addEventListener("blur", function () {
-
     const dni = inputDni.value.trim();
     if (!dni) return;
 
@@ -173,11 +175,9 @@ inputDni.addEventListener("blur", function () {
         inputApellido.value = anterior.apellido;
         inputNombre.value = anterior.nombre;
     }
-
 });
 
 btnAgregar.addEventListener("click", async function () {
-
     const dni = inputDni.value.trim();
     const apellido = inputApellido.value.trim();
     const nombre = inputNombre.value.trim();
@@ -204,7 +204,6 @@ btnAgregar.addEventListener("click", async function () {
     btnAgregar.disabled = true;
 
     try {
-
         const entrada = {
             id: Date.now(),
             dni: dni,
@@ -219,30 +218,23 @@ btnAgregar.addEventListener("click", async function () {
 
         await db.collection(COLECCION).doc(String(entrada.id)).set(entrada);
 
-        // se dejan DNI/Apellido/Nombre cargados por si hay que
-        // agregarle otro análisis al mismo paciente a continuación,
-        // pero el título es específico de este análisis: se limpia
         inputTitulo.value = "";
         campoTitulo.style.display = "none";
-
     } catch (error) {
         console.error(error);
         alert("No se pudo guardar el análisis: " + error.message);
     } finally {
         btnAgregar.disabled = false;
     }
-
 });
 
 document.getElementById("btnBorrarTodo").addEventListener("click", async function () {
-
     if (entradas.length === 0) return;
 
     const confirmar = confirm("¿Borrar todo el historial cargado? Esta acción no se puede deshacer y afecta a todos los usuarios.");
     if (!confirmar) return;
 
     try {
-
         const grupos = [];
         for (let i = 0; i < entradas.length; i += 450) {
             grupos.push(entradas.slice(i, i + 450));
@@ -255,12 +247,10 @@ document.getElementById("btnBorrarTodo").addEventListener("click", async functio
             });
             await lote.commit();
         }
-
     } catch (error) {
         console.error(error);
         alert("No se pudo borrar todo: " + error.message);
     }
-
 });
 
 async function eliminarEntrada(id) {
@@ -282,7 +272,6 @@ function totalEnRango(desde, hasta) {
 }
 
 function renderizarCards() {
-
     const hoy = new Date();
     const { lunes, domingo } = obtenerRangoSemana(hoy);
     const inicioMes = new Date(hoy.getFullYear(), hoy.getMonth(), 1);
@@ -317,7 +306,6 @@ function renderizarCards() {
             <div class="detalle">${entradas.length} carga${entradas.length === 1 ? "" : "s"}</div>
         </div>
     `;
-
 }
 
 let periodoActivo = "semana";
@@ -332,18 +320,16 @@ document.querySelectorAll(".tab-periodo").forEach(function (boton) {
 });
 
 function renderizarTablaPeriodo() {
-
     const cuerpo = document.getElementById("cuerpoTablaPeriodo");
 
     if (entradas.length === 0) {
-        cuerpo.innerHTML = `<tr><td colspan="8" class="sin-datos">Todavía no cargaste ningún análisis.</td></tr>`;
+        cuerpo.innerHTML = `<tr><td colspan="9" class="sin-datos">Todavía no cargaste ningún análisis.</td></tr>`;
         return;
     }
 
     const grupos = {};
 
     entradas.forEach(function (e) {
-
         const fecha = parsearFecha(e.fecha);
         let clave, etiqueta;
 
@@ -364,13 +350,11 @@ function renderizarTablaPeriodo() {
         }
 
         grupos[clave].porReactivo[e.reactivo] += e.cantidad;
-
     });
 
     const filas = Object.values(grupos).sort(function (a, b) { return b.orden - a.orden; });
 
     cuerpo.innerHTML = filas.map(function (fila) {
-
         const total = REACTIVOS.reduce(function (acc, r) { return acc + fila.porReactivo[r]; }, 0);
 
         const celdas = REACTIVOS.map(function (r) {
@@ -378,13 +362,10 @@ function renderizarTablaPeriodo() {
         }).join("");
 
         return `<tr><td>${fila.etiqueta}</td>${celdas}<td class="col-total">${total}</td></tr>`;
-
     }).join("");
-
 }
 
 function renderizarTablaPorcentaje() {
-
     const cuerpo = document.getElementById("cuerpoTablaPorcentaje");
     const totalHistorico = entradas.reduce(function (acc, e) { return acc + e.cantidad; }, 0);
 
@@ -416,11 +397,9 @@ function renderizarTablaPorcentaje() {
                 </tr>
             `;
         }).join("");
-
 }
 
 function renderizarTablaResultados() {
-
     const cuerpo = document.getElementById("cuerpoTablaResultados");
 
     if (entradas.length === 0) {
@@ -429,7 +408,6 @@ function renderizarTablaResultados() {
     }
 
     cuerpo.innerHTML = REACTIVOS.map(function (r) {
-
         const grupo = GRUPOS_RESULTADO[r];
         const opciones = OPCIONES_RESULTADO[grupo];
 
@@ -466,13 +444,10 @@ function renderizarTablaResultados() {
                 <td>${pctB}%</td>
             </tr>
         `;
-
     }).join("");
-
 }
 
 function renderizarHistorial() {
-
     const cuerpo = document.getElementById("cuerpoHistorial");
 
     if (entradas.length === 0) {
@@ -485,7 +460,6 @@ function renderizarHistorial() {
     });
 
     cuerpo.innerHTML = ordenadas.map(function (e) {
-
         const fecha = parsearFecha(e.fecha);
         const fechaTexto = `${formatearFechaCorta(fecha)}/${fecha.getFullYear()}`;
         const grupo = GRUPOS_RESULTADO[e.reactivo];
@@ -505,7 +479,6 @@ function renderizarHistorial() {
                 <td><button class="fila-historial-eliminar" data-id="${e.id}" type="button">🗑️</button></td>
             </tr>
         `;
-
     }).join("");
 
     cuerpo.querySelectorAll(".fila-historial-eliminar").forEach(function (boton) {
@@ -513,7 +486,6 @@ function renderizarHistorial() {
             eliminarEntrada(Number(boton.dataset.id));
         });
     });
-
 }
 
 function renderizarTodo() {
