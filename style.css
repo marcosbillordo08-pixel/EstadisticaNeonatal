@@ -50,7 +50,7 @@ img.emoji {
 }
 
 .contenedor {
-    max-width: 1100px;
+    max-width: 1380px;
     margin: 0 auto;
     padding: 28px 24px 64px;
 }
@@ -75,6 +75,8 @@ h1 {
     color: var(--text-muted);
     font-size: 0.88rem;
     margin: 0;
+    line-height: 1.45;
+    max-width: 980px;
 }
 
 h2 {
@@ -96,7 +98,7 @@ h2 {
 
 .form-fila {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 14px;
     align-items: end;
 }
@@ -139,7 +141,8 @@ select {
     -moz-appearance: none;
     appearance: none;
     background-color: var(--bg-elevated);
-    background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    background-image:
+        linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
         linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
     background-position: calc(100% - 18px) center, calc(100% - 13px) center;
     background-size: 5px 5px, 5px 5px;
@@ -162,6 +165,7 @@ button {
     border-radius: var(--radius-sm);
     padding: 10px 16px;
     cursor: pointer;
+    transition: 0.18s ease;
 }
 
 button:hover {
@@ -258,6 +262,7 @@ button:disabled {
     border: none;
     border-bottom: 2px solid transparent;
     padding: 9px 16px;
+    border-radius: 0;
 }
 
 .tab-periodo.activo {
@@ -269,6 +274,7 @@ button:disabled {
     overflow-x: auto;
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
+    background: var(--bg-panel);
 }
 
 table {
@@ -276,6 +282,7 @@ table {
     border-collapse: collapse;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.82rem;
+    min-width: max-content;
 }
 
 thead th {
@@ -358,7 +365,8 @@ tbody tr:hover {
     margin-right: 8px;
 }
 
-.fila-historial-eliminar {
+.fila-historial-eliminar,
+.fila-paciente-eliminar {
     width: auto;
     padding: 4px 10px;
     font-size: 0.72rem;
@@ -367,7 +375,8 @@ tbody tr:hover {
     background: transparent;
 }
 
-.fila-historial-eliminar:hover {
+.fila-historial-eliminar:hover,
+.fila-paciente-eliminar:hover {
     background: var(--danger-bg);
 }
 
@@ -394,17 +403,17 @@ tbody tr:hover {
 }
 
 /* =========================================================
-   TABS GENERALES
+   TABS PRINCIPALES
 ========================================================= */
 
-.tabs-vistas {
+.vista-tabs {
     display: flex;
     gap: 8px;
     margin-bottom: 20px;
     flex-wrap: wrap;
 }
 
-.tab-vista {
+.vista-tab {
     background: var(--bg-panel);
     border: 1px solid var(--border);
     color: var(--text-muted);
@@ -413,15 +422,86 @@ tbody tr:hover {
     transition: 0.2s ease;
 }
 
-.tab-vista:hover {
+.vista-tab:hover {
     border-color: var(--accent-dim);
     color: var(--text);
 }
 
-.tab-vista.activo {
+.vista-tab.activo {
     background: var(--accent);
     border-color: var(--accent);
     color: #0a1413;
+}
+
+/* =========================================================
+   BUSCADOR DE PACIENTES EN SEROLOGÍA
+========================================================= */
+
+.paciente-busqueda-resultado {
+    margin-top: 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--bg-elevated);
+    padding: 14px 16px;
+}
+
+.busqueda-paciente-vacio {
+    color: var(--text-faint);
+    font-size: 0.9rem;
+}
+
+.busqueda-paciente-box {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.busqueda-paciente-cabecera {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px 18px;
+}
+
+.busqueda-dato {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+}
+
+.busqueda-dato .titulo {
+    display: block;
+    font-size: 0.72rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+    margin-bottom: 4px;
+    font-weight: 600;
+}
+
+.busqueda-dato .valor {
+    font-size: 0.94rem;
+    color: var(--text);
+    font-weight: 600;
+    line-height: 1.35;
+}
+
+.busqueda-lista {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.busqueda-lista table {
+    min-width: 100%;
+}
+
+.busqueda-lista thead th {
+    font-size: 0.68rem;
+}
+
+.busqueda-lista tbody td {
+    font-size: 0.82rem;
 }
 
 /* =========================================================
@@ -432,62 +512,126 @@ tbody tr:hover {
     display: none;
 }
 
-.analisis-multiple {
-    grid-column: 1 / -1;
+.pacientes-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
 }
 
-.analisis-grid {
+.pacientes-analisis-bloque {
+    margin-top: 8px;
+}
+
+.pacientes-analisis-bloque > label {
+    display: block;
+    margin: 0 0 10px;
+}
+
+#vistaPacientes .analisis-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 10px;
+    grid-template-columns: repeat(3, minmax(240px, 1fr));
+    gap: 14px;
     background: var(--bg-elevated);
     border: 1px solid var(--border);
     border-radius: var(--radius-sm);
     padding: 14px;
 }
 
-.check-analisis {
+#vistaPacientes .analisis-chip {
     display: flex;
     align-items: center;
-    gap: 10px;
+    justify-content: flex-start;
+    gap: 12px;
+    min-height: 54px;
+    padding: 0 14px;
+    margin: 0;
     background: #11171b;
     border: 1px solid var(--border);
-    border-radius: 8px;
-    padding: 10px 12px;
+    border-radius: 10px;
     cursor: pointer;
-    transition: 0.2s ease;
     user-select: none;
+    transition: 0.2s ease;
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text);
+    text-transform: none;
+    letter-spacing: 0;
 }
 
-.check-analisis:hover {
+#vistaPacientes .analisis-chip:hover {
     border-color: var(--accent-dim);
     background: #182026;
 }
 
-.check-analisis input {
-    width: 16px;
-    height: 16px;
+#vistaPacientes .analisis-chip input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
     margin: 0;
+    flex: 0 0 17px;
     accent-color: var(--accent);
-    flex-shrink: 0;
+    position: static;
+    transform: none;
 }
 
-.check-analisis span {
-    font-size: 0.88rem;
+#vistaPacientes .analisis-chip span {
+    display: block;
+    margin: 0;
+    padding: 0;
+    line-height: 1.2;
+    font-size: 0.9rem;
+    font-weight: 600;
     color: var(--text);
+    text-transform: none;
+    letter-spacing: 0;
 }
 
-.tabla-pacientes th,
-.tabla-pacientes td {
+.pacientes-acciones-superior {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 16px;
+}
+
+.pacientes-header-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.pacientes-header-panel h2 {
+    margin-bottom: 0;
+    flex: 1;
+}
+
+.acciones-pacientes {
+    margin-top: 0;
+}
+
+.pacientes-leyenda {
+    margin-top: 14px;
+    color: var(--text-faint);
+    font-size: 0.84rem;
+    line-height: 1.45;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+#vistaPacientes table th,
+#vistaPacientes table td {
     text-align: center;
+    font-size: 0.76rem;
 }
 
-.tabla-pacientes th:nth-child(2),
-.tabla-pacientes td:nth-child(2),
-.tabla-pacientes th:nth-child(3),
-.tabla-pacientes td:nth-child(3),
-.tabla-pacientes th:nth-child(4),
-.tabla-pacientes td:nth-child(4) {
+#vistaPacientes table th:nth-child(2),
+#vistaPacientes table td:nth-child(2),
+#vistaPacientes table th:nth-child(3),
+#vistaPacientes table td:nth-child(3),
+#vistaPacientes table th:nth-child(4),
+#vistaPacientes table td:nth-child(4) {
     text-align: left;
 }
 
@@ -503,56 +647,19 @@ tbody tr:hover {
     font-size: 1rem;
 }
 
-.pacientes-acciones {
-    display: flex;
-    justify-content: flex-end;
-    gap: 10px;
-    margin-top: 12px;
-    flex-wrap: wrap;
+/* =========================================================
+   TABLAS DE SEROLOGÍA - AJUSTE PARA MUCHAS COLUMNAS
+========================================================= */
+
+#tablaPeriodo th,
+#tablaPeriodo td {
+    font-size: 0.75rem;
 }
 
-.btn-planilla {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #0a1413;
-    font-weight: 700;
-}
-
-.btn-planilla:hover {
-    background: #5fe0d3;
-    border-color: #5fe0d3;
-}
-
-.btn-limpiar-planilla {
-    background: transparent;
-    color: var(--text-faint);
-    border-color: var(--border);
-}
-
-.btn-limpiar-planilla:hover {
-    color: var(--danger);
-    border-color: var(--danger);
-    background: var(--danger-bg);
-}
-
-.fila-paciente-eliminar {
-    width: auto;
-    padding: 4px 10px;
-    font-size: 0.72rem;
-    border-color: var(--danger);
-    color: var(--danger);
-    background: transparent;
-}
-
-.fila-paciente-eliminar:hover {
-    background: var(--danger-bg);
-}
-
-.ayuda-planilla {
-    color: var(--text-faint);
-    font-size: 0.82rem;
-    margin-top: 12px;
-    line-height: 1.45;
+#cuerpoHistorial td,
+#cuerpoTablaResultados td,
+#cuerpoTablaPorcentaje td {
+    font-size: 0.8rem;
 }
 
 /* =========================================================
@@ -750,9 +857,27 @@ tbody tr:hover {
     color: var(--danger);
 }
 
-@media (max-width: 900px) {
-    .analisis-grid {
-        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+/* =========================================================
+   RESPONSIVE
+========================================================= */
+
+@media (max-width: 1200px) {
+    #vistaPacientes .analisis-grid {
+        grid-template-columns: repeat(2, minmax(220px, 1fr));
+    }
+}
+
+@media (max-width: 980px) {
+    .contenedor {
+        max-width: 100%;
+    }
+
+    .pacientes-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .busqueda-paciente-cabecera {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -771,283 +896,43 @@ tbody tr:hover {
         font-size: 16px;
     }
 
-    .tabs-vistas {
+    .vista-tabs {
         gap: 6px;
     }
 
-    .tab-vista {
+    .vista-tab {
         width: 100%;
         text-align: center;
     }
 
-    .pacientes-acciones,
-    .acciones-globales {
+    .acciones-globales,
+    .acciones-pacientes {
         flex-direction: column;
     }
 
-    .pacientes-acciones button,
-    .acciones-globales button {
+    .acciones-globales button,
+    .acciones-pacientes button,
+    .pacientes-acciones-superior .btn-principal {
         width: 100%;
     }
-}
 
-.vista-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.vista-tab {
-    background: var(--bg-panel);
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    padding: 10px 16px;
-    border-radius: 999px;
-    transition: 0.2s ease;
-}
-
-.vista-tab:hover {
-    border-color: var(--accent-dim);
-    color: var(--text);
-}
-
-.vista-tab.activo {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #0a1413;
-}
-
-/* =========================================================
-   PACIENTES - AJUSTE VISUAL
-========================================================= */
-
-.pacientes-form-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(220px, 1fr));
-    gap: 14px;
-    margin-bottom: 16px;
-}
-
-.pacientes-analisis-bloque {
-    margin-top: 8px;
-}
-
-.pacientes-analisis-bloque label {
-    display: block;
-    margin-bottom: 10px;
-}
-
-.analisis-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(180px, 1fr));
-    gap: 12px;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 14px;
-}
-
-.analisis-chip {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    min-height: 48px;
-    padding: 10px 14px;
-    background: #11171b;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    cursor: pointer;
-    transition: 0.2s ease;
-    user-select: none;
-    margin: 0;
-}
-
-.analisis-chip:hover {
-    border-color: var(--accent-dim);
-    background: #182026;
-}
-
-.analisis-chip input[type="checkbox"] {
-    width: 17px;
-    height: 17px;
-    margin: 0;
-    accent-color: var(--accent);
-    flex-shrink: 0;
-}
-
-.analisis-chip span {
-    display: inline-block;
-    color: var(--text);
-    font-size: 0.92rem;
-    font-weight: 500;
-    line-height: 1.2;
-}
-
-.pacientes-acciones-superior {
-    display: flex;
-    justify-content: flex-start;
-    margin-top: 16px;
-}
-
-.pacientes-header-panel {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    gap: 14px;
-    flex-wrap: wrap;
-}
-
-.pacientes-header-panel h2 {
-    margin-bottom: 0;
-    flex: 1;
-}
-
-.acciones-pacientes {
-    margin-top: 0;
-}
-
-.pacientes-leyenda {
-    margin-top: 14px;
-    color: var(--text-faint);
-    font-size: 0.84rem;
-    line-height: 1.45;
-    padding: 12px 14px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    background: rgba(255, 255, 255, 0.02);
-}
-
-/* TABLA PACIENTES */
-#vistaPacientes table th,
-#vistaPacientes table td {
-    text-align: center;
-}
-
-#vistaPacientes table th:nth-child(2),
-#vistaPacientes table td:nth-child(2),
-#vistaPacientes table th:nth-child(3),
-#vistaPacientes table td:nth-child(3),
-#vistaPacientes table th:nth-child(4),
-#vistaPacientes table td:nth-child(4) {
-    text-align: left;
-}
-
-.marca-si {
-    color: var(--ok);
-    font-weight: 700;
-    font-size: 1rem;
-}
-
-.marca-no {
-    color: var(--danger);
-    font-weight: 700;
-    font-size: 1rem;
-}
-
-/* RESPONSIVE */
-@media (max-width: 900px) {
-    .pacientes-form-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .analisis-grid {
-        grid-template-columns: repeat(2, minmax(160px, 1fr));
-    }
-}
-
-@media (max-width: 640px) {
-    .analisis-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .pacientes-acciones-superior .btn-principal,
-    .acciones-pacientes button {
-        width: 100%;
-    }
-}
-
-/* ===== FIX visual definitivo de checks en Pacientes ===== */
-
-#vistaPacientes .pacientes-analisis-bloque > label {
-    display: block;
-    margin: 0 0 10px;
-}
-
-#vistaPacientes .analisis-grid {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(220px, 1fr));
-    gap: 14px;
-    background: var(--bg-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-sm);
-    padding: 14px;
-}
-
-#vistaPacientes .analisis-chip {
-    display: flex;
-    align-items: center;
-    justify-content: flex-start;
-    gap: 12px;
-    min-height: 46px;
-    padding: 0 14px;
-    margin: 0;
-    background: #11171b;
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    cursor: pointer;
-    user-select: none;
-    transition: 0.2s ease;
-
-    /* esto pisa el estilo global de label */
-    font-size: 0.92rem;
-    font-weight: 600;
-    color: var(--text);
-    text-transform: none;
-    letter-spacing: 0;
-}
-
-#vistaPacientes .analisis-chip:hover {
-    border-color: var(--accent-dim);
-    background: #182026;
-}
-
-#vistaPacientes .analisis-chip input[type="checkbox"] {
-    width: 17px;
-    height: 17px;
-    margin: 0;
-    flex: 0 0 17px;
-    accent-color: var(--accent);
-    position: static;
-    transform: none;
-}
-
-#vistaPacientes .analisis-chip span {
-    display: block;
-    margin: 0;
-    padding: 0;
-    line-height: 1;
-    font-size: 0.95rem;
-    font-weight: 600;
-    color: var(--text);
-    text-transform: uppercase;
-    letter-spacing: 0;
-}
-
-#vistaPacientes .pacientes-acciones-superior {
-    display: flex;
-    justify-content: flex-start;
-    margin-top: 16px;
-}
-
-@media (max-width: 980px) {
-    #vistaPacientes .analisis-grid {
-        grid-template-columns: repeat(2, minmax(200px, 1fr));
-    }
-}
-
-@media (max-width: 640px) {
     #vistaPacientes .analisis-grid {
         grid-template-columns: 1fr;
+    }
+
+    .form-fila {
+        grid-template-columns: 1fr;
+    }
+
+    .subtitulo {
+        font-size: 0.82rem;
+    }
+
+    .panel {
+        padding: 16px;
+    }
+
+    .card .valor {
+        font-size: 1.55rem;
     }
 }
