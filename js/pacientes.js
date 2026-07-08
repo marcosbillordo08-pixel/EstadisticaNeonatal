@@ -1,4 +1,13 @@
-const REACTIVOS_PLANILLA = ["VDRL", "HIV", "HEPATITIS B", "TOXOPLASMOSIS", "CHAGAS", "PCR"];
+const REACTIVOS_PLANILLA = [
+    "VDRL",
+    "TPPA ELISA",
+    "HIV ELISA",
+    "TOXOPLASMOSIS HAI",
+    "CHAGAS HAI",
+    "CHAGAS ELISA",
+    "HEPATITIS B ELISA"
+];
+
 const COLECCION_PLANILLA = "planillaPacientes";
 
 let pacientesPlanilla = [];
@@ -19,33 +28,21 @@ const btnLimpiarPlanilla = document.getElementById("btnLimpiarPlanilla");
 const cuerpoTablaPacientes = document.getElementById("cuerpoTablaPacientesPlanilla");
 const gridAnalisisPacientes = document.getElementById("pacientesAnalisisGrid");
 
-// ============================================================
-// Sincronización en tiempo real con Firestore
-// ============================================================
-
 function iniciarEscuchaPlanilla() {
-
     listenerPlanilla = db.collection(COLECCION_PLANILLA)
         .orderBy("id", "asc")
         .onSnapshot(function (snapshot) {
-
             pacientesPlanilla = [];
             snapshot.forEach(function (docSnap) {
                 pacientesPlanilla.push(docSnap.data());
             });
-
             renderizarTablaPacientes();
-
         }, function (error) {
             console.error("Error escuchando la planilla de pacientes:", error);
         });
-
 }
 
-// se engancha a la sesión de forma independiente de auth.js, para no
-// tener que tocar ese archivo (ya anda bien, mejor no arriesgarlo)
 auth.onAuthStateChanged(async function (user) {
-
     if (listenerPlanilla) {
         listenerPlanilla();
         listenerPlanilla = null;
@@ -61,12 +58,7 @@ auth.onAuthStateChanged(async function (user) {
     } catch (error) {
         console.error(error);
     }
-
 });
-
-// ============================================================
-// Pestañas Serología / Pacientes
-// ============================================================
 
 function mostrarVista(nombreVista) {
     if (!vistaSerologia || !vistaPacientes) return;
@@ -193,7 +185,6 @@ function construirPacientePlanilla() {
 }
 
 async function agregarPacienteAPlanilla() {
-
     const paciente = construirPacientePlanilla();
     if (!paciente) return;
 
@@ -208,7 +199,6 @@ async function agregarPacienteAPlanilla() {
     } finally {
         if (btnAgregarPacientePlanilla) btnAgregarPacientePlanilla.disabled = false;
     }
-
 }
 
 if (btnAgregarPacientePlanilla) {
@@ -225,14 +215,12 @@ async function eliminarPacientePlanilla(id) {
 }
 
 async function limpiarPlanillaPacientes() {
-
     if (pacientesPlanilla.length === 0) return;
 
     const confirmar = confirm("¿Vaciar la planilla de pacientes? Esta acción no se puede deshacer y afecta a todos los usuarios.");
     if (!confirmar) return;
 
     try {
-
         const grupos = [];
         for (let i = 0; i < pacientesPlanilla.length; i += 450) {
             grupos.push(pacientesPlanilla.slice(i, i + 450));
@@ -245,12 +233,10 @@ async function limpiarPlanillaPacientes() {
             });
             await lote.commit();
         }
-
     } catch (error) {
         console.error(error);
         alert("No se pudo vaciar la planilla: " + error.message);
     }
-
 }
 
 if (btnLimpiarPlanilla) {
@@ -269,7 +255,7 @@ function renderizarTablaPacientes() {
     if (pacientesPlanilla.length === 0) {
         cuerpoTablaPacientes.innerHTML = `
             <tr>
-                <td colspan="11" class="sin-datos">
+                <td colspan="12" class="sin-datos">
                     Todavía no agregaste pacientes a la planilla.
                 </td>
             </tr>
@@ -285,11 +271,12 @@ function renderizarTablaPacientes() {
                 <td>${p.apellido}</td>
                 <td>${p.nombre}</td>
                 <td>${marcaAnalisis(p.analisis["VDRL"])}</td>
-                <td>${marcaAnalisis(p.analisis["HIV"])}</td>
-                <td>${marcaAnalisis(p.analisis["HEPATITIS B"])}</td>
-                <td>${marcaAnalisis(p.analisis["TOXOPLASMOSIS"])}</td>
-                <td>${marcaAnalisis(p.analisis["CHAGAS"])}</td>
-                <td>${marcaAnalisis(p.analisis["PCR"])}</td>
+                <td>${marcaAnalisis(p.analisis["TPPA ELISA"])}</td>
+                <td>${marcaAnalisis(p.analisis["HIV ELISA"])}</td>
+                <td>${marcaAnalisis(p.analisis["TOXOPLASMOSIS HAI"])}</td>
+                <td>${marcaAnalisis(p.analisis["CHAGAS HAI"])}</td>
+                <td>${marcaAnalisis(p.analisis["CHAGAS ELISA"])}</td>
+                <td>${marcaAnalisis(p.analisis["HEPATITIS B ELISA"])}</td>
                 <td>
                     <button class="fila-paciente-eliminar" data-id="${p.id}" type="button">🗑️</button>
                 </td>
