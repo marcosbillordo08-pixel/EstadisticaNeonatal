@@ -773,8 +773,6 @@ renderHistorial();
             console.error("Error escuchando datos:", error);
         });
 
-}
-
 function parsearFecha(fechaISO) {
     const [y, m, d] = fechaISO.split("-").map(Number);
     return new Date(y, m - 1, d);
