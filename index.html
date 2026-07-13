@@ -1,528 +1,331 @@
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-    <meta name="theme-color" content="#0d1114">
-    <title>Estadística de Serología</title>
-
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="stylesheet"
-        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap">
-
-    <!-- Twemoji -->
-    <script src="https://cdn.jsdelivr.net/npm/@twemoji/api@17.0.3/dist/twemoji.min.js"
-        integrity="sha384-Y5xukbGJwykbHHkTbLJykYLcBPFxrwipTbEh0puxhkz9CZ90raTPGe2Ks4vCxsYU"
-        crossorigin="anonymous"></script>
-
-    <!-- Firebase -->
-    <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-auth-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/12.15.0/firebase-firestore-compat.js"></script>
-
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sistema de Registro - Serología y Pacientes</title>
+    <!-- Tailwind CSS para un diseño limpio y moderno -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos para transiciones de pestañas y estados activos */
+        .tab-periodo.activo {
+            background-color: #3b82f6;
+            color: white;
+        }
+        .tab-navegacion.activo {
+            border-bottom-color: #3b82f6;
+            color: #2563eb;
+        }
+    </style>
 </head>
+<body class="bg-gray-50 text-gray-800 font-sans min-h-screen">
 
-<body>
-
-    <!-- =========================
-         LOGIN
-    ========================== -->
-    <div id="pantallaLogin" class="pantalla-auth" style="display:none;">
-        <div class="auth-card">
-
-            <h1 class="auth-logo">🧫 Serología</h1>
-
-            <form id="formLogin" class="auth-form" style="display:flex;">
-                <label>Correo</label>
-                <input type="email" id="loginEmail" required placeholder="tu@correo.com" autocomplete="username">
-
-                <label>Contraseña</label>
-                <input type="password" id="loginPassword" required placeholder="••••••••"
-                    autocomplete="current-password">
-
-                <p id="loginError" class="auth-error"></p>
-
-                <button type="submit" class="btn-principal">Ingresar</button>
-
-                <p class="auth-switch">
-                    ¿No tenés cuenta? <a href="#" id="linkMostrarRegistro">Registrate</a>
-                </p>
-            </form>
-
-            <form id="formRegistro" class="auth-form" style="display:none;">
-                <label>Correo</label>
-                <input type="email" id="registroEmail" required placeholder="tu@correo.com" autocomplete="username">
-
-                <label>Contraseña</label>
-                <input type="password" id="registroPassword" required placeholder="Mínimo 6 caracteres" minlength="6"
-                    autocomplete="new-password">
-
-                <p id="registroError" class="auth-error"></p>
-
-                <button type="submit" class="btn-principal">Crear cuenta</button>
-
-                <p class="auth-switch">
-                    ¿Ya tenés cuenta?
-                    <a href="#" id="linkMostrarLogin" style="display:none;">Iniciar sesión</a>
-                </p>
-            </form>
-
-            <p class="auth-nota">
-                Usa el mismo usuario y contraseña que StockLab. Las cuentas nuevas quedan pendientes de aprobación por
-                un administrador.
-            </p>
-
+    <!-- BARRA DE NAVEGACIÓN SUPERIOR -->
+    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <h1 class="text-xl font-bold text-gray-900 flex items-center gap-2">
+                <span class="p-2 bg-blue-600 text-white rounded-lg text-sm">🔬</span>
+                Laboratorio - Sección Serología
+            </h1>
+            <!-- Tabs principales de navegación -->
+            <nav class="flex space-x-8 h-full">
+                <button onclick="cambiarPestañaPrincipal('seccion-serologia', this)" class="tab-navegacion activo px-1 pt-1 border-b-2 border-transparent text-sm font-medium flex items-center">
+                    Carga de Serología
+                </button>
+                <button onclick="cambiarPestañaPrincipal('seccion-pacientes', this)" class="tab-navegacion px-1 pt-1 border-b-2 border-transparent text-sm font-medium flex items-center">
+                    Planilla de Pacientes
+                </button>
+            </nav>
         </div>
-    </div>
+    </header>
 
-    <!-- =========================
-         PENDIENTE APROBACIÓN
-    ========================== -->
-    <div id="pantallaPendiente" class="pantalla-auth" style="display:none;">
-        <div class="auth-card">
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
 
-            <h1 class="auth-logo">🧫 Serología</h1>
-
-            <p class="pendiente-msg">
-                ⏳ Tu cuenta está pendiente de aprobación por un administrador.
-                Volvé a intentarlo más tarde.
-            </p>
-
-            <button id="btnLogoutPendiente" class="btn-secundario" style="width:100%;">
-                Cerrar sesión
-            </button>
-
-        </div>
-    </div>
-
-    <!-- =========================
-         APP
-    ========================== -->
-    <div id="appContenido" style="display:none;">
-        <div class="contenedor">
-
-            <header>
-                <div>
-                    <h1>🧫 Estadística de Serología</h1>
-                    <p class="subtitulo">
-                        VDRL · TPPA ELISA · HIV ELISA · TOXO HAI · CHAGAS HAI · CHAGAS ELISA · HEP. B ELISA
-                    </p>
+        <!-- =========================================================
+             PÁGINA 1: CARGA Y CONTROL DE SEROLOGÍA
+        ========================================================= -->
+        <section id="seccion-serologia" class="space-y-8">
+            
+            <!-- TARJETAS DE ESTADÍSTICAS (CARDS) -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <p class="text-sm font-medium text-gray-500 uppercase">Esta Semana</p>
+                    <p id="cardSemana" class="text-3xl font-bold text-blue-600 mt-1">0</p>
                 </div>
-
-                <div class="sesion">
-                    <button id="btnAdminPanel" class="btn-icono" type="button" aria-label="Panel de administración"
-                        style="display:none;">🛠️</button>
-                    <button id="btnLogout" class="btn-icono" type="button" aria-label="Cerrar sesión">🚪</button>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <p class="text-sm font-medium text-gray-500 uppercase">Este Mes</p>
+                    <p id="cardMes" class="text-3xl font-bold text-blue-600 mt-1">0</p>
                 </div>
-            </header>
-
-            <!-- Tabs -->
-            <div class="vista-tabs">
-                <button class="vista-tab activo" id="tabPacientes" type="button">👥 Pacientes</button>
-                <button class="vista-tab" id="tabSerologia" type="button">📊 Serología</button>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <p class="text-sm font-medium text-gray-500 uppercase">Este Año</p>
+                    <p id="cardAno" class="text-3xl font-bold text-blue-600 mt-1">0</p>
+                </div>
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
+                    <p class="text-sm font-medium text-gray-500 uppercase">Total Histórico</p>
+                    <p id="cardTotal" class="text-3xl font-bold text-gray-900 mt-1">0</p>
+                </div>
             </div>
 
-            <!-- ======================================================
-                 VISTA PACIENTES
-            ======================================================= -->
-            <div id="vistaPacientes">
-
-                <div class="panel">
-                    <h2>👤 Agregar paciente</h2>
-
-                    <div class="form-fila pacientes-form-grid">
-
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- COLUMNA IZQUIERDA: FORMULARIO DE CARGA DE ANÁLISIS -->
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 lg:col-span-1 space-y-6">
+                    <h2 class="text-lg font-bold text-gray-900 border-b pb-3">Cargar Resultado</h2>
+                    
+                    <form id="formSerologia" onsubmit="event.preventDefault();" class="space-y-4">
+                        <!-- Selector de Tipo de Paciente en Serología -->
                         <div>
-                            <label>Tipo de paciente</label>
-                            <select id="pacienteTipo">
+                            <label for="tipoPacienteSerologia" class="block text-sm font-medium text-gray-700">Tipo de Paciente</label>
+                            <select id="tipoPacienteSerologia" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2">
                                 <option value="EMBARAZADA">Embarazada</option>
-                                <option value="RN">R/N</option>
+                                <option value="RN">R/N (Recién Nacido)</option>
                             </select>
                         </div>
 
+                        <!-- ID / DNI con Datalist para buscar de la planilla temporal -->
                         <div>
-                            <label>Sector</label>
-                            <select id="pacienteSector">
-                                <option value="ADMISION">ADMISION</option>
-                                <option value="ALTO RIESGO">ALTO RIESGO</option>
-                                <option value="BAJO RIESGO">BAJO RIESGO</option>
-                                <option value="HOSPITAL DE DIA">HOSPITAL DE DIA</option>
-                                <option value="NEO">NEO</option>
-                            </select>
+                            <label for="dni" class="block text-sm font-medium text-gray-700">DNI / ID Paciente</label>
+                            <input type="text" id="dni" list="datalistPacientes" autocomplete="off" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2" placeholder="Ingresá DNI o buscá un R/N">
+                            <!-- Este datalist se alimenta desde pacientes.js -->
+                            <datalist id="datalistPacientes"></datalist>
                         </div>
 
-                        <div id="bloquePacienteDni">
-                            <label>DNI</label>
-                            <input type="text" id="pacienteDni" placeholder="Ej: 12345678" inputmode="numeric">
+                        <!-- Sector -->
+                        <div>
+                            <label for="sectorPacienteSerologia" class="block text-sm font-medium text-gray-700">Sector / Origen</label>
+                            <input type="text" id="sectorPacienteSerologia" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2">
                         </div>
 
-                        <div id="bloquePacienteApellido">
-                            <label>Apellido</label>
-                            <input type="text" id="pacienteApellido" placeholder="Apellido">
+                        <!-- Apellido -->
+                        <div>
+                            <label for="apellido" class="block text-sm font-medium text-gray-700">Apellido</label>
+                            <input type="text" id="apellido" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2">
                         </div>
 
-                        <div id="bloquePacienteNombre">
-                            <label>Nombre</label>
-                            <input type="text" id="pacienteNombre" placeholder="Nombre">
+                        <!-- Nombre -->
+                        <div>
+                            <label for="nombre" class="block text-sm font-medium text-gray-700">Nombre</label>
+                            <input type="text" id="nombre" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2">
                         </div>
 
-                        <div id="bloquePacienteSemanas">
-                            <label>Semanas de gestación</label>
-                            <input type="text" id="pacienteSemanasGestacion" placeholder="Ej: 24">
+                        <!-- Semanas de Gestación (Embarazadas) -->
+                        <div>
+                            <label for="semanasGestacion" class="block text-sm font-medium text-gray-700">Semanas de Gestación</label>
+                            <input type="number" id="semanasGestacion" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2">
                         </div>
 
-                        <div id="bloquePacienteFechaNacimiento" style="display:none;">
-                            <label>Fecha de nacimiento</label>
-                            <input type="date" id="pacienteFechaNacimiento">
+                        <!-- Fecha de Nacimiento (R/N) -->
+                        <div>
+                            <label for="fechaNacimientoSerologia" class="block text-sm font-medium text-gray-700">Fecha de Nacimiento</label>
+                            <input type="date" id="fechaNacimientoSerologia" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2">
                         </div>
 
-                        <div class="analisis-multiple">
-                            <label>Análisis solicitados</label>
+                        <hr class="my-4">
 
-                            <div class="analisis-grid" id="pacientesAnalisisGrid">
-                                <label class="check-analisis"><input type="checkbox" value="VDRL"><span>VDRL</span></label>
-                                <label class="check-analisis"><input type="checkbox" value="TPPA ELISA"><span>TPPA ELISA</span></label>
-                                <label class="check-analisis"><input type="checkbox" value="HIV ELISA"><span>HIV ELISA</span></label>
-                                <label class="check-analisis"><input type="checkbox" value="TOXO HAI"><span>TOXO HAI</span></label>
-                                <label class="check-analisis"><input type="checkbox" value="CHAGAS HAI"><span>CHAGAS HAI</span></label>
-                                <label class="check-analisis"><input type="checkbox" value="CHAGAS ELISA"><span>CHAGAS ELISA</span></label>
-                                <label class="check-analisis"><input type="checkbox" value="HEP B ELISA"><span>HEP B ELISA</span></label>
+                        <!-- Reactivo -->
+                        <div>
+                            <label for="reactivo" class="block text-sm font-medium text-gray-700">Reactivo / Análisis</label>
+                            <select id="reactivo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2"></select>
+                        </div>
+
+                        <!-- Resultado -->
+                        <div>
+                            <label for="resultado" class="block text-sm font-medium text-gray-700">Resultado</label>
+                            <select id="resultado" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2"></select>
+                        </div>
+
+                        <!-- Título (Opcional - p. ej. Dilución VDRL "1/4 dils") -->
+                        <div>
+                            <label for="titulo" class="block text-sm font-medium text-gray-700">Especificación / Título <span class="text-xs text-gray-400">(Opcional)</span></label>
+                            <input type="text" id="titulo" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2" placeholder="Ej: 1/4 dils, Reactivo débil">
+                        </div>
+
+                        <!-- Cantidad -->
+                        <div>
+                            <label for="cantidad" class="block text-sm font-medium text-gray-700">Cantidad de determinaciones</label>
+                            <input type="number" id="cantidad" value="1" min="1" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2">
+                        </div>
+
+                        <button type="button" id="btnGuardar" class="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-md transition duration-150">
+                            Guardar Análisis
+                        </button>
+                    </form>
+                </div>
+
+                <!-- COLUMNA DERECHA: SECCIÓN DE RESUMEN Y ESTADÍSTICAS -->
+                <div class="lg:col-span-2 space-y-8">
+                    <!-- Resumen por Reactivo con Tabs de Periodo -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center border-b pb-4 gap-4">
+                            <h3 class="text-lg font-bold text-gray-900">Resumen por Reactivo</h3>
+                            <!-- Selector de período en tabs -->
+                            <div class="inline-flex rounded-md shadow-sm">
+                                <button type="button" data-periodo="semana" class="tab-periodo activo px-4 py-2 text-sm font-medium rounded-l-md border border-gray-300 hover:bg-gray-50">Semana</button>
+                                <button type="button" data-periodo="mes" class="tab-periodo px-4 py-2 text-sm font-medium border-t border-b border-gray-300 hover:bg-gray-50">Mes</button>
+                                <button type="button" data-periodo="ano" class="tab-periodo px-4 py-2 text-sm font-medium rounded-r-md border border-gray-300 hover:bg-gray-50">Año</button>
                             </div>
                         </div>
-
-                        <div>
-                            <button class="btn-principal" id="btnAgregarPacientePlanilla" type="button">
-                                ➕ Agregar paciente
-                            </button>
+                        <div class="overflow-x-auto mt-4">
+                            <table class="min-w-full divide-y divide-gray-200 text-left text-sm">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 font-semibold text-gray-600">Reactivo</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-600 col-total">Cantidad</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-600">Porcentaje</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cuerpoResumen" class="divide-y divide-gray-100">
+                                    <!-- Dinámico por serologia.js -->
+                                </tbody>
+                            </table>
                         </div>
                     </div>
 
-                    <div class="pacientes-acciones">
-                        <button class="btn-planilla" id="btnDescargarPlanillaPacientes" type="button">
-                            📄 Descargar planilla PDF
-                        </button>
-                        <button class="btn-limpiar-planilla" id="btnLimpiarPlanilla" type="button">
-                            🗑️ Vaciar planilla
-                        </button>
+                    <!-- Resultados Totales por Reactivo -->
+                    <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-900 border-b pb-4">Detalle de Resultados Globales</h3>
+                        <div class="overflow-x-auto mt-4">
+                            <table class="min-w-full divide-y divide-gray-200 text-left text-sm">
+                                <thead class="bg-gray-50">
+                                    <tr>
+                                        <th class="px-4 py-3 font-semibold text-gray-600">Reactivo</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-600">Grupo Positivos/Reactivos</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-600">%</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-600">Grupo Negativos/No Reactivos</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-600">%</th>
+                                        <th class="px-4 py-3 font-semibold text-gray-600 col-total">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cuerpoResultados" class="divide-y divide-gray-100">
+                                    <!-- Dinámico por serologia.js -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
+                </div>
+            </div>
 
-                    <p class="ayuda-planilla">
-                        Los pacientes cargados acá quedan disponibles para autocompletar en la pestaña Serología y
-                        también para generar la planilla de trabajo en PDF.
+            <!-- BUSCADOR INDEPENDIENTE DE ANÁLISIS HISTÓRICOS -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200 space-y-4">
+                <h3 class="text-lg font-bold text-gray-900">Buscador Histórico de Serologías</h3>
+                <div class="flex gap-2 max-w-lg">
+                    <input type="text" id="buscarSerologia" class="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 bg-gray-50 border p-2 text-sm" placeholder="Buscar por DNI, apellido, reactivo...">
+                    <button type="button" id="btnBuscarSerologia" class="bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-md transition">Buscar</button>
+                    <button type="button" id="btnLimpiarBusquedaSerologia" class="bg-gray-200 hover:bg-gray-300 text-gray-700 text-sm font-medium px-4 py-2 rounded-md transition">Limpiar</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200 text-left text-xs sm:text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-2 font-semibold text-gray-600">Fecha</th>
+                                <th class="px-4 py-2 font-semibold text-gray-600">DNI/ID</th>
+                                <th class="px-4 py-2 font-semibold text-gray-600">Tipo</th>
+                                <th class="px-4 py-2 font-semibold text-gray-600">Sector</th>
+                                <th class="px-4 py-2 font-semibold text-gray-600">Apellido</th>
+                                <th class="px-4 py-2 font-semibold text-gray-600">Nombre</th>
+                                <th class="px-4 py-2 font-semibold text-gray-600">Semanas</th>
+                                <th class="px-4 py-2 font-semibold text-gray-600">F. Nac.</th>
+                                <th class="px-4 py-2 font-semibold text-gray-600">Reactivo</th>
+                                <th class="px-4 py-2 font-semibold text-gray-600">Resultado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoBusquedaSerologia" class="divide-y divide-gray-100">
+                            <tr>
+                                <td colspan="10" class="px-4 py-4 text-center text-gray-400 italic">Ingresá un término y hacé clic en Buscar.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- HISTORIAL RECIENTE GENERAL -->
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h3 class="text-lg font-bold text-gray-900 border-b pb-4">Historial Reciente de Determinaciones</h3>
+                <div class="overflow-x-auto mt-4">
+                    <table class="min-w-full divide-y divide-gray-200 text-left text-xs sm:text-sm">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-4 py-3 font-semibold text-gray-600">Fecha</th>
+                                <th class="px-4 py-3 font-semibold text-gray-600">DNI/ID</th>
+                                <th class="px-4 py-3 font-semibold text-gray-600">Tipo</th>
+                                <th class="px-4 py-3 font-semibold text-gray-600">Sector</th>
+                                <th class="px-4 py-3 font-semibold text-gray-600">Apellido</th>
+                                <th class="px-4 py-3 font-semibold text-gray-600">Nombre</th>
+                                <th class="px-4 py-3 font-semibold text-gray-600">Semanas</th>
+                                <th class="px-4 py-3 font-semibold text-gray-600">F. Nac.</th>
+                                <th class="px-4 py-3 font-semibold text-gray-600">Reactivo</th>
+                                <th class="px-4 py-3 font-semibold text-gray-600">Resultado</th>
+                                <th class="px-4 py-3 font-semibold text-gray-600 col-total">Cant.</th>
+                                <th class="px-4 py-3 font-semibold text-gray-600">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="cuerpoHistorial" class="divide-y divide-gray-100">
+                            <!-- Dinámico por serologia.js -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </section>
+
+        <!-- =========================================================
+             PÁGINA 2: PLANILLA TEMPORAL DE PACIENTES
+        ========================================================= -->
+        <section id="seccion-pacientes" class="hidden space-y-8">
+            <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+                <h2 class="text-lg font-bold text-gray-900 border-b pb-4 mb-4">Planilla Temporal de Pacientes Activos</h2>
+                
+                <!-- Aquí va la estructura visual donde se rindea la carga temporal de pacientes -->
+                <p class="text-sm text-gray-600 mb-4">
+                    Utilizá esta sección para dar de alta a los pacientes que se encuentran actualmente en el laboratorio esperando o en proceso de análisis.
+                </p>
+
+                <div class="bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded mb-6">
+                    <p class="text-sm text-yellow-800 font-medium">
+                        Nota de sincronización: Los pacientes agregados en esta pestaña estarán disponibles inmediatamente en la pestaña de Serología escribiendo su DNI.
                     </p>
                 </div>
 
-                <div class="panel">
-                    <h2>📋 Pacientes cargados</h2>
-
-                    <div class="tabla-scroll">
-                        <table class="tabla-pacientes">
-                            <thead>
-                                <tr>
-                                    <th>Tipo</th>
-                                    <th>Sector</th>
-                                    <th>DNI / ID</th>
-                                    <th>Apellido</th>
-                                    <th>Nombre</th>
-                                    <th>Sem.</th>
-                                    <th>F. Nac.</th>
-                                    <th>VDRL</th>
-                                    <th>TPPA</th>
-                                    <th>HIV</th>
-                                    <th>TOXO HAI</th>
-                                    <th>CHAGAS HAI</th>
-                                    <th>CHAGAS ELISA</th>
-                                    <th>HEP. B</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="cuerpoTablaPacientesPlanilla">
-                                <tr>
-                                    <td colspan="15" class="sin-datos">
-                                        Todavía no agregaste pacientes a la planilla.
-                                    </td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
+                <!-- NOTA: Asegúrate de que los inputs de pacientes.js (como inputPacienteDni, etc.) apunten aquí -->
+                <div class="border p-4 rounded-lg bg-gray-50">
+                    <p class="text-sm text-gray-400 italic">El formulario interactivo y la tabla activa de la planilla de pacientes se gestionan a través de tu script "pacientes.js".</p>
                 </div>
-
             </div>
+        </section>
 
-            <!-- ======================================================
-                 VISTA SEROLOGÍA
-            ======================================================= -->
-            <div id="vistaSerologia" style="display:none;">
+    </main>
 
-                <div class="panel">
-                    <h2>➕ Cargar análisis</h2>
-
-                    <div class="form-fila">
-
-                        <div>
-                            <label>DNI / ID paciente</label>
-                            <input type="text" id="dni" list="listaPacientesSerologia"
-                                placeholder="Buscar por DNI o ID del paciente">
-                            <datalist id="listaPacientesSerologia"></datalist>
-                        </div>
-
-                        <div>
-                            <label>Tipo</label>
-                            <input type="text" id="tipoPacienteSerologia" placeholder="Se autocompleta" readonly>
-                        </div>
-
-                        <div>
-                            <label>Sector</label>
-                            <input type="text" id="sectorPacienteSerologia" placeholder="Se autocompleta" readonly>
-                        </div>
-
-                        <div>
-                            <label>Apellido</label>
-                            <input type="text" id="apellido" placeholder="Se autocompleta" readonly>
-                        </div>
-
-                        <div>
-                            <label>Nombre</label>
-                            <input type="text" id="nombre" placeholder="Se autocompleta" readonly>
-                        </div>
-
-                        <div>
-                            <label>Semanas de gestación</label>
-                            <input type="text" id="semanasGestacion" placeholder="Se autocompleta" readonly>
-                        </div>
-
-                        <div>
-                            <label>Fecha de nacimiento</label>
-                            <input type="text" id="fechaNacimientoSerologia" placeholder="Se autocompleta" readonly>
-                        </div>
-
-                        <div>
-                            <label>Reactivo</label>
-                            <select id="reactivo">
-                                <option value="VDRL">VDRL</option>
-                                <option value="TPPA ELISA">TPPA ELISA</option>
-                                <option value="HIV ELISA">HIV ELISA</option>
-                                <option value="TOXO HAI">TOXO HAI</option>
-                                <option value="CHAGAS HAI">CHAGAS HAI</option>
-                                <option value="CHAGAS ELISA">CHAGAS ELISA</option>
-                                <option value="HEP B ELISA">HEP B ELISA</option>
-                            </select>
-                        </div>
-
-                        <div>
-                            <label>Resultado</label>
-                            <select id="resultado"></select>
-                        </div>
-
-                        <div id="campoTitulo">
-                            <label>Título / Dilución</label>
-                            <input type="text" id="titulo" placeholder="Ej: 1/2, 1/4, 1/8...">
-                        </div>
-
-                        <div>
-                            <button class="btn-principal" id="btnGuardar" type="button">
-                                ➕ Agregar análisis
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- CARDS -->
-                <div class="cards">
-                    <div class="card">
-                        <h3>Semana</h3>
-                        <p id="cardSemana">0</p>
-                    </div>
-                    <div class="card">
-                        <h3>Mes</h3>
-                        <p id="cardMes">0</p>
-                    </div>
-                    <div class="card">
-                        <h3>Año</h3>
-                        <p id="cardAno">0</p>
-                    </div>
-                    <div class="card">
-                        <h3>Total</h3>
-                        <p id="cardTotal">0</p>
-                    </div>
-                </div>
-
-                <!-- RESUMEN -->
-                <div class="panel">
-                    <h2>📈 Distribución por reactivo</h2>
-
-                    <div class="tabs-periodo">
-                        <button class="tab-periodo activo" data-periodo="semana" type="button">Semana</button>
-                        <button class="tab-periodo" data-periodo="mes" type="button">Mes</button>
-                        <button class="tab-periodo" data-periodo="año" type="button">Año</button>
-                    </div>
-
-                    <div class="tabla-scroll">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Reactivo</th>
-                                    <th>Total</th>
-                                    <th>%</th>
-                                </tr>
-                            </thead>
-                            <tbody id="cuerpoResumen">
-                                <tr>
-                                    <td colspan="3" class="sin-datos">Sin datos.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- RESULTADOS -->
-                <div class="panel">
-                    <h2>🧬 Resultados por reactivo</h2>
-                    <div class="tabla-scroll">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Reactivo</th>
-                                    <th>Resultado A</th>
-                                    <th>% A</th>
-                                    <th>Resultado B</th>
-                                    <th>% B</th>
-                                    <th>Total</th>
-                                </tr>
-                            </thead>
-                            <tbody id="cuerpoResultados">
-                                <tr>
-                                    <td colspan="6" class="sin-datos">Sin datos.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- BUSCADOR -->
-                <div class="panel">
-                    <h2>🔎 Buscar por DNI / paciente</h2>
-
-                    <div class="buscador-serologia">
-                        <div>
-                            <label>DNI / ID</label>
-                            <input type="text" id="buscarSerologia" placeholder="Ej: 12345678 o RN-...">
-                        </div>
-
-                        <div class="buscador-serologia-acciones">
-                            <button class="btn-secundario" id="btnBuscarSerologia" type="button">
-                                Buscar
-                            </button>
-                            <button class="btn-secundario" id="btnLimpiarBusquedaSerologia" type="button">
-                                Limpiar búsqueda
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="tabla-scroll">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>DNI / ID</th>
-                                    <th>Tipo</th>
-                                    <th>Sector</th>
-                                    <th>Apellido</th>
-                                    <th>Nombre</th>
-                                    <th>Sem.</th>
-                                    <th>F. Nac.</th>
-                                    <th>Reactivo</th>
-                                    <th>Resultado</th>
-                                </tr>
-                            </thead>
-                            <tbody id="cuerpoBusquedaSerologia">
-                                <tr>
-                                    <td colspan="10" class="sin-datos">Todavía no hiciste una búsqueda.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- HISTORIAL -->
-                <div class="panel">
-                    <h2>🗂️ Historial completo</h2>
-
-                    <div class="tabla-scroll">
-                        <table>
-                            <thead>
-                                <tr>
-                                    <th>Fecha</th>
-                                    <th>DNI / ID</th>
-                                    <th>Tipo</th>
-                                    <th>Sector</th>
-                                    <th>Apellido</th>
-                                    <th>Nombre</th>
-                                    <th>Sem.</th>
-                                    <th>F. Nac.</th>
-                                    <th>Reactivo</th>
-                                    <th>Resultado</th>
-                                    <th>Cantidad</th>
-                                    <th></th>
-                                </tr>
-                            </thead>
-                            <tbody id="cuerpoHistorial">
-                                <tr>
-                                    <td colspan="12" class="sin-datos">Todavía no hay análisis cargados.</td>
-                                </tr>
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <div class="acciones-globales">
-                        <button class="btn-borrar-todo" id="btnBorrarTodo" type="button">
-                            🗑️ Borrar todo el historial
-                        </button>
-                        <button class="btn-planilla" id="btnExportarPDF" type="button">
-                            📄 Exportar estadística PDF
-                        </button>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- =========================
-         MODAL ADMIN
-    ========================== -->
-    <div id="modalAdmin" class="modal-admin" style="display:none;">
-        <div class="modal-admin-contenido">
-            <div class="modal-admin-header">
-                <h2>🛠️ Solicitudes pendientes</h2>
-                <button id="cerrarModalAdmin" class="btn-icono" type="button">✖</button>
-            </div>
-
-            <div id="listaPendientes" class="lista-pendientes">
-                <p>Cargando...</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- Librerías PDF -->
-    <script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
-
-    <!-- App -->
-    <script src="js/firebase-config.js"></script>
-    <script src="js/auth.js"></script>
-    <script src="js/pacientes.js"></script>
-    <script src="js/serologia.js"></script>
-    <script src="js/planillas.js"></script>
-    <script src="js/pdf.js"></script>
-
+    <!-- INICIALIZACIÓN DE FIREBASE Y SCRIPTS -->
+    <!-- Reemplazar con tus credenciales e imports reales de Firebase -->
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/8.10.1/firebase-firestore.js"></script>
+    
     <script>
-        if (window.twemoji) {
-            twemoji.parse(document.body, { folder: 'svg', ext: '.svg' });
+        // Configuración de Firebase (Se asume ya configurada globalmente en tu app)
+        // const firebaseConfig = { ... };
+        // firebase.initializeApp(firebaseConfig);
+        // window.db = firebase.firestore();
+    </script>
+
+    <!-- Tus scripts modularizados -->
+    <script src="pacientes.js"></script>
+    <script src="serologia.js"></script>
+
+    <!-- LÓGICA EXCLUSIVA PARA EL CAMBIO DE PESTAÑAS (TABS) EN EL FRONTEND -->
+    <script>
+        function cambiarPestañaPrincipal(idSeccion, botonActivo) {
+            // Ocultar todas las secciones principales
+            document.getElementById('seccion-serologia').classList.add('hidden');
+            document.getElementById('seccion-pacientes').classList.add('hidden');
+
+            // Mostrar sección seleccionada
+            document.getElementById(idSeccion).classList.remove('hidden');
+
+            // Actualizar estilo activo en los botones de navegación
+            document.querySelectorAll('.tab-navegacion').forEach(btn => {
+                btn.classList.remove('activo');
+            });
+            botonActivo.classList.add('activo');
         }
     </script>
 </body>
-
 </html>
