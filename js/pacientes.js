@@ -2,86 +2,139 @@ const REACTIVOS_PLANILLA = [
     "VDRL",
     "TPPA ELISA",
     "HIV ELISA",
-    "TOXOPLASMOSIS HAI",
+    "TOXO HAI",
     "CHAGAS HAI",
     "CHAGAS ELISA",
-    "HEPATITIS B ELISA"
+    "HEP B ELISA"
 ];
 
 const COLECCION_PLANILLA = "planillaPacientes";
 
 let pacientesPlanilla = [];
-let listenerPlanilla = null;
+window.listenerPlanilla = null;
 
+/* =========================================================
+   ELEMENTOS DOM
+========================================================= */
+
+// Tabs / vistas
 const btnTabSerologia = document.getElementById("tabSerologia");
 const btnTabPacientes = document.getElementById("tabPacientes");
-
 const vistaSerologia = document.getElementById("vistaSerologia");
 const vistaPacientes = document.getElementById("vistaPacientes");
 
+// Formulario pacientes
+const inputPacienteTipo = document.getElementById("pacienteTipo");
+const inputPacienteSector = document.getElementById("pacienteSector");
 const inputPacienteDni = document.getElementById("pacienteDni");
 const inputPacienteApellido = document.getElementById("pacienteApellido");
 const inputPacienteNombre = document.getElementById("pacienteNombre");
+const inputPacienteSemanasGestacion = document.getElementById("pacienteSemanasGestacion");
+const inputPacienteFechaNacimiento = document.getElementById("pacienteFechaNacimiento");
 
+// Bloques para ocultar / mostrar según tipo
+const bloquePacienteDni = document.getElementById("bloquePacienteDni");
+const bloquePacienteApellido = document.getElementById("bloquePacienteApellido");
+const bloquePacienteNombre = document.getElementById("bloquePacienteNombre");
+const bloquePacienteSemanas = document.getElementById("bloquePacienteSemanas");
+const bloquePacienteFechaNacimiento = document.getElementById("bloquePacienteFechaNacimiento");
+
+// Acciones
 const btnAgregarPacientePlanilla = document.getElementById("btnAgregarPacientePlanilla");
 const btnLimpiarPlanilla = document.getElementById("btnLimpiarPlanilla");
+
+// Tabla
 const cuerpoTablaPacientes = document.getElementById("cuerpoTablaPacientesPlanilla");
+
+// Grid análisis
 const gridAnalisisPacientes = document.getElementById("pacientesAnalisisGrid");
 
-function iniciarEscuchaPlanilla() {
-    listenerPlanilla = db.collection(COLECCION_PLANILLA)
-        .orderBy("id", "asc")
-        .onSnapshot(function (snapshot) {
-            pacientesPlanilla = [];
-            snapshot.forEach(function (docSnap) {
-                pacientesPlanilla.push(docSnap.data());
-            });
-            renderizarTablaPacientes();
-        }, function (error) {
-            console.error("Error escuchando la planilla de pacientes:", error);
-        });
+// Datalist serología
+const listaPacientesSerologia = document.getElementById("listaPacientesSerologia");
+
+/* =========================================================
+   HELPERS
+========================================================= */
+
+function normalizarTexto(valor) {
+    return String(valor || "").trim();
 }
 
-auth.onAuthStateChanged(async function (user) {
-    if (listenerPlanilla) {
-        listenerPlanilla();
-        listenerPlanilla = null;
-    }
+function normalizarMayus(valor) {
+    return normalizarTexto(valor).toUpperCase();
+}
 
-    if (!user) return;
+function obtenerTipoPacienteActual() {
+    return inputPacienteTipo ? inputPacienteTipo.value : "EMBARAZADA";
+}
 
-    try {
-        const doc = await db.collection("usuarios").doc(user.uid).get();
-        if (doc.exists && doc.data().aprobado === true) {
-            iniciarEscuchaPlanilla();
-        }
-    } catch (error) {
-        console.error(error);
-    }
-});
+function esRN() {
+    return obtenerTipoPacienteActual() === "RN";
+}
+
+function formatearFechaNacimiento(fechaISO) {
+    if (!fechaISO) return "—";
+    const partes = String(fechaISO).split("-");
+    if (partes.length !== 3) return fechaISO;
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
+}
+
+function generarIdRN(apellido, fechaNacimiento) {
+    const apellidoLimpio = normalizarMayus(apellido).replace(/\s+/g, "");
+    const fecha = fechaNacimiento || "SINFECHA";
+    return `RN-${apellidoLimpio}-${fecha}`;
+}
+
+function obtenerAnalisisSeleccionados() {
+    const analisis = {};
+
+    if (!gridAnalisisPacientes) return analisis;
+
+    REACTIVOS_PLANILLA.forEach(function (reactivo) {
+        analisis[reactivo] = false;
+    });
+
+    gridAnalisisPacientes.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
+        analisis[checkbox.value] = checkbox.checked;
+    });
+
+    return analisis;
+}
+
+function limpiarChecksAnalisis() {
+    if (!gridAnalisisPacientes) return;
+
+    gridAnalisisPacientes.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
+        checkbox.checked = false;
+    });
+}
+
+function marcaAnalisis(valor) {
+    return valor
+        ? '<span class="marca-si">✓</span>'
+        : '<span class="marca-no">✕</span>';
+}
+
+/* =========================================================
+   VISTA / TABS
+========================================================= */
 
 function mostrarVista(nombreVista) {
     if (!vistaSerologia || !vistaPacientes) return;
 
     if (nombreVista === "pacientes") {
-        vistaSerologia.style.display = "none";
         vistaPacientes.style.display = "block";
+        vistaSerologia.style.display = "none";
 
-        if (btnTabSerologia) btnTabSerologia.classList.remove("activo");
         if (btnTabPacientes) btnTabPacientes.classList.add("activo");
+        if (btnTabSerologia) btnTabSerologia.classList.remove("activo");
     } else {
-        vistaSerologia.style.display = "block";
         vistaPacientes.style.display = "none";
+        vistaSerologia.style.display = "block";
 
-        if (btnTabSerologia) btnTabSerologia.classList.add("activo");
         if (btnTabPacientes) btnTabPacientes.classList.remove("activo");
+        if (btnTabSerologia) btnTabSerologia.classList.add("activo");
     }
-}
-
-if (btnTabSerologia) {
-    btnTabSerologia.addEventListener("click", function () {
-        mostrarVista("serologia");
-    });
 }
 
 if (btnTabPacientes) {
@@ -90,120 +143,215 @@ if (btnTabPacientes) {
     });
 }
 
-function obtenerChecksPacientes() {
-    if (!gridAnalisisPacientes) return [];
-    return Array.from(gridAnalisisPacientes.querySelectorAll('input[type="checkbox"]'));
-}
-
-function limpiarChecksPaciente() {
-    obtenerChecksPacientes().forEach(function (check) {
-        check.checked = false;
+if (btnTabSerologia) {
+    btnTabSerologia.addEventListener("click", function () {
+        mostrarVista("serologia");
     });
 }
 
-function obtenerAnalisisSeleccionadosPaciente() {
-    return obtenerChecksPacientes()
-        .filter(function (check) { return check.checked; })
-        .map(function (check) { return check.value; });
+/* =========================================================
+   FORMULARIO SEGÚN TIPO DE PACIENTE
+========================================================= */
+
+function actualizarFormularioSegunTipoPaciente() {
+    const rn = esRN();
+
+    if (bloquePacienteDni) {
+        bloquePacienteDni.style.display = rn ? "none" : "block";
+    }
+
+    if (bloquePacienteNombre) {
+        bloquePacienteNombre.style.display = rn ? "none" : "block";
+    }
+
+    if (bloquePacienteSemanas) {
+        bloquePacienteSemanas.style.display = rn ? "none" : "block";
+    }
+
+    if (bloquePacienteFechaNacimiento) {
+        bloquePacienteFechaNacimiento.style.display = rn ? "block" : "none";
+    }
+
+    if (rn) {
+        if (inputPacienteDni) inputPacienteDni.value = "";
+        if (inputPacienteNombre) inputPacienteNombre.value = "";
+        if (inputPacienteSemanasGestacion) inputPacienteSemanasGestacion.value = "";
+    } else {
+        if (inputPacienteFechaNacimiento) inputPacienteFechaNacimiento.value = "";
+    }
 }
 
-function limpiarFormularioPaciente() {
-    if (inputPacienteDni) inputPacienteDni.value = "";
-    if (inputPacienteApellido) inputPacienteApellido.value = "";
-    if (inputPacienteNombre) inputPacienteNombre.value = "";
-    limpiarChecksPaciente();
-    if (inputPacienteDni) inputPacienteDni.focus();
+if (inputPacienteTipo) {
+    inputPacienteTipo.addEventListener("change", actualizarFormularioSegunTipoPaciente);
 }
 
-function autocompletarPacientePorDni() {
-    if (!inputPacienteDni) return;
+/* =========================================================
+   FIRESTORE
+========================================================= */
 
-    const dni = inputPacienteDni.value.trim();
-    if (!dni) return;
-
-    const encontradoPlanilla = pacientesPlanilla
-        .slice()
-        .reverse()
-        .find(function (p) { return p.dni === dni; });
-
-    if (encontradoPlanilla) {
-        if (inputPacienteApellido) inputPacienteApellido.value = encontradoPlanilla.apellido || "";
-        if (inputPacienteNombre) inputPacienteNombre.value = encontradoPlanilla.nombre || "";
+function iniciarEscuchaPlanilla() {
+    if (!window.db) {
+        console.error("Firestore no está inicializado.");
         return;
     }
 
-    if (typeof entradas !== "undefined" && Array.isArray(entradas)) {
-        const encontradoHistorial = entradas
-            .slice()
-            .reverse()
-            .find(function (e) { return e.dni === dni; });
-
-        if (encontradoHistorial) {
-            if (inputPacienteApellido) inputPacienteApellido.value = encontradoHistorial.apellido || "";
-            if (inputPacienteNombre) inputPacienteNombre.value = encontradoHistorial.nombre || "";
+    if (window.listenerPlanilla) {
+        try {
+            window.listenerPlanilla();
+        } catch (error) {
+            console.warn("No se pudo cerrar listenerPlanilla anterior:", error);
         }
+        window.listenerPlanilla = null;
     }
+
+    window.listenerPlanilla = db.collection(COLECCION_PLANILLA)
+        .orderBy("id", "asc")
+        .onSnapshot(function (snapshot) {
+            pacientesPlanilla = [];
+
+            snapshot.forEach(function (docSnap) {
+                pacientesPlanilla.push(docSnap.data());
+            });
+
+            renderizarTablaPacientes();
+            actualizarDatalistPacientesSerologia();
+
+            if (typeof window.actualizarBuscadorPacientesSerologia === "function") {
+                window.actualizarBuscadorPacientesSerologia();
+            }
+
+            if (typeof window.autocompletarSerologiaPorDni === "function") {
+                window.autocompletarSerologiaPorDni();
+            }
+
+        }, function (error) {
+            console.error("Error escuchando la planilla de pacientes:", error);
+        });
 }
 
-if (inputPacienteDni) {
-    inputPacienteDni.addEventListener("blur", autocompletarPacientePorDni);
-}
+window.iniciarEscuchaPlanilla = iniciarEscuchaPlanilla;
 
-function construirPacientePlanilla() {
-    const dni = inputPacienteDni ? inputPacienteDni.value.trim() : "";
-    const apellido = inputPacienteApellido ? inputPacienteApellido.value.trim() : "";
-    const nombre = inputPacienteNombre ? inputPacienteNombre.value.trim() : "";
-    const analisisSeleccionados = obtenerAnalisisSeleccionadosPaciente();
+/* =========================================================
+   CREAR PACIENTE
+========================================================= */
+
+function construirPacienteDesdeFormulario() {
+    const tipoPaciente = obtenerTipoPacienteActual();
+    const sector = normalizarTexto(inputPacienteSector ? inputPacienteSector.value : "");
+    const apellido = normalizarMayus(inputPacienteApellido ? inputPacienteApellido.value : "");
+    const analisis = obtenerAnalisisSeleccionados();
+
+    if (!apellido) {
+        alert("Ingresá el apellido del paciente.");
+        return null;
+    }
+
+    if (tipoPaciente === "RN") {
+        const fechaNacimiento = inputPacienteFechaNacimiento ? inputPacienteFechaNacimiento.value : "";
+
+        if (!fechaNacimiento) {
+            alert("Ingresá la fecha de nacimiento del R/N.");
+            return null;
+        }
+
+        const idRN = generarIdRN(apellido, fechaNacimiento);
+
+        return {
+            id: Date.now(),
+            dni: idRN,
+            tipoPaciente: "RN",
+            sector: sector,
+            apellido: apellido,
+            nombre: "",
+            semanasGestacion: "",
+            fechaNacimiento: fechaNacimiento,
+            analisis: analisis
+        };
+    }
+
+    const dni = normalizarTexto(inputPacienteDni ? inputPacienteDni.value : "");
+    const nombre = normalizarTexto(inputPacienteNombre ? inputPacienteNombre.value : "");
+    const semanasGestacion = normalizarTexto(inputPacienteSemanasGestacion ? inputPacienteSemanasGestacion.value : "");
 
     if (!dni) {
-        alert("Ingresá el DNI del paciente.");
+        alert("Ingresá el DNI de la embarazada.");
         return null;
     }
 
-    if (!apellido || !nombre) {
-        alert("Ingresá apellido y nombre del paciente.");
+    if (!nombre) {
+        alert("Ingresá el nombre de la embarazada.");
         return null;
     }
-
-    if (analisisSeleccionados.length === 0) {
-        alert("Seleccioná al menos un análisis para la planilla.");
-        return null;
-    }
-
-    const mapaAnalisis = {};
-    REACTIVOS_PLANILLA.forEach(function (reactivo) {
-        mapaAnalisis[reactivo] = analisisSeleccionados.includes(reactivo);
-    });
 
     return {
         id: Date.now(),
         dni: dni,
+        tipoPaciente: "EMBARAZADA",
+        sector: sector,
         apellido: apellido,
         nombre: nombre,
-        analisis: mapaAnalisis
+        semanasGestacion: semanasGestacion,
+        fechaNacimiento: "",
+        analisis: analisis
     };
 }
 
-async function agregarPacienteAPlanilla() {
-    const paciente = construirPacientePlanilla();
+function existePacienteDuplicado(paciente) {
+    return pacientesPlanilla.some(function (p) {
+        return String(p.dni || "").trim() === String(paciente.dni || "").trim();
+    });
+}
+
+async function agregarPacientePlanilla() {
+    const paciente = construirPacienteDesdeFormulario();
     if (!paciente) return;
 
-    if (btnAgregarPacientePlanilla) btnAgregarPacientePlanilla.disabled = true;
+    if (existePacienteDuplicado(paciente)) {
+        alert("Ese paciente ya está cargado en la planilla.");
+        return;
+    }
+
+    if (btnAgregarPacientePlanilla) {
+        btnAgregarPacientePlanilla.disabled = true;
+    }
 
     try {
         await db.collection(COLECCION_PLANILLA).doc(String(paciente.id)).set(paciente);
         limpiarFormularioPaciente();
     } catch (error) {
         console.error(error);
-        alert("No se pudo agregar el paciente a la planilla: " + error.message);
+        alert("No se pudo guardar el paciente: " + error.message);
     } finally {
-        if (btnAgregarPacientePlanilla) btnAgregarPacientePlanilla.disabled = false;
+        if (btnAgregarPacientePlanilla) {
+            btnAgregarPacientePlanilla.disabled = false;
+        }
     }
 }
 
 if (btnAgregarPacientePlanilla) {
-    btnAgregarPacientePlanilla.addEventListener("click", agregarPacienteAPlanilla);
+    btnAgregarPacientePlanilla.addEventListener("click", agregarPacientePlanilla);
 }
+
+/* =========================================================
+   LIMPIAR FORMULARIO
+========================================================= */
+
+function limpiarFormularioPaciente() {
+    if (inputPacienteTipo) inputPacienteTipo.value = "EMBARAZADA";
+    if (inputPacienteSector) inputPacienteSector.value = "ADMISION";
+    if (inputPacienteDni) inputPacienteDni.value = "";
+    if (inputPacienteApellido) inputPacienteApellido.value = "";
+    if (inputPacienteNombre) inputPacienteNombre.value = "";
+    if (inputPacienteSemanasGestacion) inputPacienteSemanasGestacion.value = "";
+    if (inputPacienteFechaNacimiento) inputPacienteFechaNacimiento.value = "";
+
+    limpiarChecksAnalisis();
+    actualizarFormularioSegunTipoPaciente();
+}
+
+/* =========================================================
+   ELIMINAR / LIMPIAR PLANILLA
+========================================================= */
 
 async function eliminarPacientePlanilla(id) {
     try {
@@ -217,7 +365,7 @@ async function eliminarPacientePlanilla(id) {
 async function limpiarPlanillaPacientes() {
     if (pacientesPlanilla.length === 0) return;
 
-    const confirmar = confirm("¿Vaciar la planilla de pacientes? Esta acción no se puede deshacer y afecta a todos los usuarios.");
+    const confirmar = confirm("¿Vaciar toda la planilla de pacientes?");
     if (!confirmar) return;
 
     try {
@@ -228,11 +376,14 @@ async function limpiarPlanillaPacientes() {
 
         for (const grupo of grupos) {
             const lote = db.batch();
+
             grupo.forEach(function (paciente) {
                 lote.delete(db.collection(COLECCION_PLANILLA).doc(String(paciente.id)));
             });
+
             await lote.commit();
         }
+
     } catch (error) {
         console.error(error);
         alert("No se pudo vaciar la planilla: " + error.message);
@@ -243,11 +394,9 @@ if (btnLimpiarPlanilla) {
     btnLimpiarPlanilla.addEventListener("click", limpiarPlanillaPacientes);
 }
 
-function marcaAnalisis(valor) {
-    return valor
-        ? '<span class="marca-si">✓</span>'
-        : '<span class="marca-no">✕</span>';
-}
+/* =========================================================
+   TABLA
+========================================================= */
 
 function renderizarTablaPacientes() {
     if (!cuerpoTablaPacientes) return;
@@ -255,7 +404,7 @@ function renderizarTablaPacientes() {
     if (pacientesPlanilla.length === 0) {
         cuerpoTablaPacientes.innerHTML = `
             <tr>
-                <td colspan="12" class="sin-datos">
+                <td colspan="15" class="sin-datos">
                     Todavía no agregaste pacientes a la planilla.
                 </td>
             </tr>
@@ -263,20 +412,25 @@ function renderizarTablaPacientes() {
         return;
     }
 
-    cuerpoTablaPacientes.innerHTML = pacientesPlanilla.map(function (p, index) {
+    cuerpoTablaPacientes.innerHTML = pacientesPlanilla.map(function (p) {
+        const analisis = p.analisis || {};
+
         return `
             <tr>
-                <td>${index + 1}</td>
-                <td>${p.dni}</td>
-                <td>${p.apellido}</td>
-                <td>${p.nombre}</td>
-                <td>${marcaAnalisis(p.analisis["VDRL"])}</td>
-                <td>${marcaAnalisis(p.analisis["TPPA ELISA"])}</td>
-                <td>${marcaAnalisis(p.analisis["HIV ELISA"])}</td>
-                <td>${marcaAnalisis(p.analisis["TOXOPLASMOSIS HAI"])}</td>
-                <td>${marcaAnalisis(p.analisis["CHAGAS HAI"])}</td>
-                <td>${marcaAnalisis(p.analisis["CHAGAS ELISA"])}</td>
-                <td>${marcaAnalisis(p.analisis["HEPATITIS B ELISA"])}</td>
+                <td>${p.tipoPaciente === "RN" ? "R/N" : "Embarazada"}</td>
+                <td>${p.sector || "—"}</td>
+                <td>${p.dni || "—"}</td>
+                <td>${p.apellido || "—"}</td>
+                <td>${p.nombre || "—"}</td>
+                <td>${p.semanasGestacion || "—"}</td>
+                <td>${p.fechaNacimiento ? formatearFechaNacimiento(p.fechaNacimiento) : "—"}</td>
+                <td>${marcaAnalisis(analisis["VDRL"])}</td>
+                <td>${marcaAnalisis(analisis["TPPA ELISA"])}</td>
+                <td>${marcaAnalisis(analisis["HIV ELISA"])}</td>
+                <td>${marcaAnalisis(analisis["TOXO HAI"])}</td>
+                <td>${marcaAnalisis(analisis["CHAGAS HAI"])}</td>
+                <td>${marcaAnalisis(analisis["CHAGAS ELISA"])}</td>
+                <td>${marcaAnalisis(analisis["HEP B ELISA"])}</td>
                 <td>
                     <button class="fila-paciente-eliminar" data-id="${p.id}" type="button">🗑️</button>
                 </td>
@@ -295,9 +449,41 @@ function renderizarTablaPacientes() {
     }
 }
 
+/* =========================================================
+   DATALIST PARA SEROLOGÍA
+========================================================= */
+
+function actualizarDatalistPacientesSerologia() {
+    if (!listaPacientesSerologia) return;
+
+    if (pacientesPlanilla.length === 0) {
+        listaPacientesSerologia.innerHTML = "";
+        return;
+    }
+
+    listaPacientesSerologia.innerHTML = pacientesPlanilla.map(function (p) {
+        const descripcion = p.tipoPaciente === "RN"
+            ? `${p.dni} - ${p.apellido} (R/N)`
+            : `${p.dni} - ${p.apellido}, ${p.nombre}`;
+
+        return `<option value="${p.dni}" label="${descripcion}"></option>`;
+    }).join("");
+}
+
+/* =========================================================
+   API GLOBAL PARA OTROS JS
+========================================================= */
+
 window.obtenerPacientesPlanilla = function () {
     return pacientesPlanilla;
 };
 
+window.actualizarDatalistPacientesSerologia = actualizarDatalistPacientesSerologia;
+
+/* =========================================================
+   INIT
+========================================================= */
+
+actualizarFormularioSegunTipoPaciente();
 renderizarTablaPacientes();
-mostrarVista("serologia");
+mostrarVista("pacientes");
