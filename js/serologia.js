@@ -65,6 +65,7 @@ const inputApellido = document.getElementById("apellido");
 const inputNombre = document.getElementById("nombre");
 const inputSemanasGestacion = document.getElementById("semanasGestacion");
 const inputFechaNacimientoSerologia = document.getElementById("fechaNacimientoSerologia");
+const bloqueSemanasGestacionSerologia = document.getElementById("bloqueSemanasGestacionSerologia");
 
 const selectReactivo = document.getElementById("reactivo");
 const selectResultado = document.getElementById("resultado");
@@ -274,6 +275,10 @@ function actualizarModoPacienteSerologia(limpiarDatos) {
         inputSemanasGestacion.readOnly = true;
         inputSemanasGestacion.placeholder = rnManual ? "No corresponde" : "Se autocompleta";
         if (rnManual) inputSemanasGestacion.value = "";
+    }
+
+    if (bloqueSemanasGestacionSerologia) {
+    bloqueSemanasGestacionSerologia.style.display = rnManual ? "none" : "";
     }
 
     if (inputDni) {
