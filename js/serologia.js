@@ -123,14 +123,7 @@ function formatearFechaCorta(fecha) {
 }
 
 function fechaHoyTexto() {
-    if (typeof formatearFechaCompleta === "function") {
-        return formatearFechaCompleta(new Date());
-    }
-    const hoy = new Date();
-    const dia = String(hoy.getDate()).padStart(2, '0');
-    const mes = String(hoy.getMonth() + 1).padStart(2, '0');
-    const anio = hoy.getFullYear();
-    return `${dia}/${mes}/${anio}`;
+    return formatearFechaCompleta(new Date());
 }
 
 function formatearFechaNacimientoSerologia(fechaISO) {
@@ -231,7 +224,6 @@ function buscarPacientePorDniOId(dniBuscado) {
 
     const pacientesPlanilla = obtenerPacientesPlanillaSeguro();
 
-    // 1. Buscamos primero en la planilla de pacientes activa (prioridad)
     const desdePlanilla = pacientesPlanilla
         .slice()
         .reverse()
@@ -241,7 +233,6 @@ function buscarPacientePorDniOId(dniBuscado) {
 
     if (desdePlanilla) return desdePlanilla;
 
-    // 2. Si no está en planilla, buscamos en el historial de serologías realizadas
     const desdeHistorial = entradas
         .slice()
         .reverse()
@@ -249,19 +240,7 @@ function buscarPacientePorDniOId(dniBuscado) {
             return String(e.dni || "").trim() === clave;
         });
 
-    if (desdeHistorial) {
-        // Formateamos para que coincida con la estructura esperada
-        return {
-            tipoPaciente: desdeHistorial.tipoPaciente,
-            sector: desdeHistorial.sector,
-            apellido: desdeHistorial.apellido,
-            nombre: desdeHistorial.nombre,
-            semanasGestacion: desdeHistorial.semanasGestacion,
-            fechaNacimiento: desdeHistorial.fechaNacimiento || ""
-        };
-    }
-
-    return null;
+    return desdeHistorial || null;
 }
 
 function limpiarFormularioSerologiaPaciente() {
@@ -272,47 +251,66 @@ function limpiarFormularioSerologiaPaciente() {
     if (inputFechaNacimientoSerologia) inputFechaNacimientoSerologia.value = "";
 }
 
+function esRNManual() {
+    return inputTipoPacienteSerologia && inputTipoPacienteSerologia.value === "RN";
+}
+
+function actualizarModoPacienteSerologia(limpiarDatos) {
+    const rnManual = esRNManual();
+    const camposManual = [
+        inputSectorPacienteSerologia,
+        inputApellido,
+        inputNombre,
+        inputFechaNacimientoSerologia
+    ];
+
+    camposManual.forEach(function (campo) {
+        if (!campo) return;
+        campo.readOnly = !rnManual;
+        campo.placeholder = rnManual ? "Completar manualmente" : "Se autocompleta";
+    });
+
+    if (inputSemanasGestacion) {
+        inputSemanasGestacion.readOnly = true;
+        inputSemanasGestacion.placeholder = rnManual ? "No corresponde" : "Se autocompleta";
+        if (rnManual) inputSemanasGestacion.value = "";
+    }
+
+    if (inputDni) {
+        inputDni.placeholder = rnManual ? "Ingresar ID manualmente" : "Buscar por DNI o ID del paciente";
+        if (rnManual) inputDni.removeAttribute("list");
+        else inputDni.setAttribute("list", "listaPacientesSerologia");
+    }
+
+    if (limpiarDatos) {
+        if (inputDni) inputDni.value = "";
+        limpiarFormularioSerologiaPaciente();
+    }
+}
+
 function completarPacienteEnSerologia(paciente) {
     if (!paciente) {
         limpiarFormularioSerologiaPaciente();
         return;
     }
 
-    const esRN = paciente.tipoPaciente === "RN";
-
     if (inputTipoPacienteSerologia) {
-        inputTipoPacienteSerologia.value = esRN ? "RN" : "EMBARAZADA";
-        // Disparar manualmente la lógica de deshabilitar/habilitar campos correspondientes
-        actualizarCamposSerologiaSegunTipo();
+        inputTipoPacienteSerologia.value = paciente.tipoPaciente === "RN" ? "RN" : "EMBARAZADA";
     }
 
     if (inputSectorPacienteSerologia) {
         inputSectorPacienteSerologia.value = paciente.sector || "";
     }
 
-    if (inputApellido) {
-        inputApellido.value = paciente.apellido || "";
-    }
-    
-    if (inputNombre) {
-        inputNombre.value = esRN ? "" : (paciente.nombre || "");
-    }
-    
-    if (inputSemanasGestacion) {
-        inputSemanasGestacion.value = esRN ? "" : (paciente.semanasGestacion || "");
-    }
-    
-    if (inputFechaNacimientoSerologia) {
-        inputFechaNacimientoSerologia.value = esRN ? (paciente.fechaNacimiento || "") : "";
-    }
+    if (inputApellido) inputApellido.value = paciente.apellido || "";
+    if (inputNombre) inputNombre.value = paciente.nombre || "";
+    if (inputSemanasGestacion) inputSemanasGestacion.value = paciente.semanasGestacion || "";
+    if (inputFechaNacimientoSerologia) inputFechaNacimientoSerologia.value = paciente.fechaNacimiento || "";
 }
 
 function autocompletarSerologiaPorDni() {
     if (!inputDni) return;
-
-    // Si el tipo de paciente actual es R/N, el DNI es de sólo lectura y autogenerado; no autocompletamos al escribir
-    const tipo = inputTipoPacienteSerologia ? inputTipoPacienteSerologia.value : "EMBARAZADA";
-    if (tipo === "RN") return;
+    if (esRNManual()) return;
 
     const dni = inputDni.value.trim();
     if (!dni) {
@@ -321,14 +319,19 @@ function autocompletarSerologiaPorDni() {
     }
 
     const paciente = buscarPacientePorDniOId(dni);
-    if (paciente) {
-        completarPacienteEnSerologia(paciente);
-    }
+    completarPacienteEnSerologia(paciente);
 }
 
 if (inputDni) {
     inputDni.addEventListener("input", autocompletarSerologiaPorDni);
     inputDni.addEventListener("blur", autocompletarSerologiaPorDni);
+}
+
+if (inputTipoPacienteSerologia) {
+    inputTipoPacienteSerologia.addEventListener("change", function () {
+        actualizarModoPacienteSerologia(true);
+    });
+    actualizarModoPacienteSerologia(false);
 }
 
 window.autocompletarSerologiaPorDni = autocompletarSerologiaPorDni;
@@ -337,79 +340,12 @@ window.actualizarBuscadorPacientesSerologia = function () {
 };
 
 /* =========================================================
-   LÓGICA SELECTOR MANUAL DE R/N Y FECHA EN SEROLOGÍA
-========================================================= */
-
-function actualizarCamposSerologiaSegunTipo() {
-    const tipo = inputTipoPacienteSerologia ? inputTipoPacienteSerologia.value : "EMBARAZADA";
-    const esRN = (tipo === "RN");
-
-    if (esRN) {
-        // Bloqueamos Nombre y Gestación
-        if (inputNombre) { inputNombre.value = ""; inputNombre.disabled = true; }
-        if (inputSemanasGestacion) { inputSemanasGestacion.value = ""; inputSemanasGestacion.disabled = true; }
-        
-        // Habilitamos Fecha de Nacimiento
-        if (inputFechaNacimientoSerologia) { inputFechaNacimientoSerologia.disabled = false; }
-        
-        // El DNI se autogenerará, lo bloqueamos para evitar edición manual errónea
-        if (inputDni) { 
-            inputDni.placeholder = "ID Automático R/N"; 
-            inputDni.readOnly = true; 
-        }
-        verificarYAutogenerarDniRN();
-    } else {
-        // Habilitamos Nombre y Gestación para embarazada
-        if (inputNombre) { inputNombre.disabled = false; }
-        if (inputSemanasGestacion) { inputSemanasGestacion.disabled = false; }
-        
-        // Bloqueamos Fecha de Nacimiento
-        if (inputFechaNacimientoSerologia) { inputFechaNacimientoSerologia.value = ""; inputFechaNacimientoSerologia.disabled = true; }
-        
-        // El DNI de embarazada es manual y editable
-        if (inputDni) { 
-            inputDni.placeholder = "Ingresá el DNI"; 
-            inputDni.readOnly = false; 
-        }
-    }
-}
-
-function generarIdRNSerologia(apellido, fechaNacimiento) {
-    const apellidoLimpio = String(apellido || "").trim().toUpperCase().replace(/\s+/g, "");
-    const fecha = fechaNacimiento || "";
-    return `RN-${apellidoLimpio}-${fecha}`;
-}
-
-function verificarYAutogenerarDniRN() {
-    const tipo = inputTipoPacienteSerologia ? inputTipoPacienteSerologia.value : "EMBARAZADA";
-    if (tipo !== "RN") return;
-
-    const apellido = inputApellido ? inputApellido.value : "";
-    const fecha = inputFechaNacimientoSerologia ? inputFechaNacimientoSerologia.value : "";
-
-    if (inputDni) {
-        inputDni.value = generarIdRNSerologia(apellido, fecha);
-    }
-}
-
-// Vinculamos los eventos para la carga/edición manual en Caliente
-if (inputTipoPacienteSerologia) {
-    inputTipoPacienteSerologia.addEventListener("change", actualizarCamposSerologiaSegunTipo);
-}
-if (inputApellido) {
-    inputApellido.addEventListener("input", verificarYAutogenerarDniRN);
-}
-if (inputFechaNacimientoSerologia) {
-    inputFechaNacimientoSerologia.addEventListener("change", verificarYAutogenerarDniRN);
-}
-
-/* =========================================================
    GUARDAR ENTRADA
 ========================================================= */
 
 function construirEntradaSerologia() {
     const dni = inputDni ? inputDni.value.trim() : "";
-    const tipoPacienteTexto = inputTipoPacienteSerologia ? inputTipoPacienteSerologia.value.trim() : "";
+    const tipoPacienteTexto = inputTipoPacienteSerologia ? inputTipoPacienteSerologia.value : "EMBARAZADA";
     const sector = inputSectorPacienteSerologia ? inputSectorPacienteSerologia.value.trim() : "";
     const apellido = inputApellido ? inputApellido.value.trim().toUpperCase() : "";
     const nombre = inputNombre ? inputNombre.value.trim() : "";
@@ -437,16 +373,13 @@ function construirEntradaSerologia() {
     }
 
     if (!apellido) {
-        alert("Completá el apellido del paciente.");
+        alert(tipoPacienteTexto === "RN"
+            ? "Completá el apellido del recién nacido."
+            : "Buscá un paciente cargado en la pestaña Pacientes.");
         return null;
     }
 
     const tipoPaciente = tipoPacienteTexto === "RN" ? "RN" : "EMBARAZADA";
-
-    if (tipoPaciente === "RN" && !fechaNacimiento) {
-        alert("Por favor cargá la Fecha de Nacimiento del R/N para poder generar el ID.");
-        return null;
-    }
 
     return {
         id: Date.now(),
@@ -455,9 +388,9 @@ function construirEntradaSerologia() {
         tipoPaciente: tipoPaciente,
         sector: sector,
         apellido: apellido,
-        nombre: tipoPaciente === "RN" ? "" : nombre,
-        semanasGestacion: tipoPaciente === "RN" ? "" : semanasGestacion,
-        fechaNacimiento: tipoPaciente === "RN" ? fechaNacimiento : "",
+        nombre: nombre,
+        semanasGestacion: semanasGestacion,
+        fechaNacimiento: fechaNacimiento,
         reactivo: reactivo,
         resultado: resultado,
         titulo: titulo,
@@ -479,7 +412,6 @@ async function guardarEntrada() {
     try {
         await db.collection(COLECCION_ANALISIS).doc(String(entrada.id)).set(entrada);
 
-        // Reset del análisis
         if (selectReactivo) selectReactivo.value = REACTIVOS[0];
         actualizarOpcionesResultado();
 
@@ -869,5 +801,6 @@ function renderTodoSerologia() {
 
 poblarReactivos();
 actualizarOpcionesResultado();
-actualizarCamposSerologiaSegunTipo(); // Estado inicial correcto de los inputs del formulario
-iniciarEscuchaDatos();
+renderResumenPorReactivo();
+renderResultadosPorReactivo();
+renderHistorial();
