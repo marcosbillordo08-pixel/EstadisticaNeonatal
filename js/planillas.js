@@ -194,4 +194,3 @@ function generarPlanillaPacientesPDF() {
     const nombreArchivo = `planilla_serologia_${Date.now()}.pdf`;
     pdf.save(nombreArchivo);
 }
-
