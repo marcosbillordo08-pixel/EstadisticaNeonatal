@@ -1,23 +1,23 @@
 :root {
-    --bg: #0d1114;
-    --bg-panel: #151b1f;
-    --bg-elevated: #1b2227;
-    --border: #262f35;
-    --border-strong: #34404a;
-    --text: #e6ecef;
-    --text-muted: #8a97a0;
-    --text-faint: #5d6a72;
-    --accent: #4dd0c4;
-    --accent-dim: #2b6b64;
-    --accent-glow: rgba(77, 208, 196, 0.18);
-    --ok: #6fcf7a;
-    --ok-bg: rgba(111, 207, 122, 0.12);
-    --warn: #f2b84b;
-    --danger: #ef6461;
-    --danger-bg: rgba(239, 100, 97, 0.12);
+    --bg: #f4f8f8;
+    --bg-panel: #ffffff;
+    --bg-elevated: #f8fbfb;
+    --border: #d7e2e2;
+    --border-strong: #b8caca;
+    --text: #183436;
+    --text-muted: #527073;
+    --text-faint: #758b8d;
+    --accent: #168f88;
+    --accent-dim: #78b9b5;
+    --accent-glow: rgba(22, 143, 136, 0.18);
+    --ok: #258a4a;
+    --ok-bg: rgba(37, 138, 74, 0.12);
+    --warn: #a86d08;
+    --danger: #c44040;
+    --danger-bg: rgba(196, 64, 64, 0.10);
     --radius: 10px;
     --radius-sm: 6px;
-    --shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+    --shadow: 0 8px 24px rgba(31, 72, 75, 0.14);
 }
 
 * {
@@ -25,14 +25,14 @@
 }
 
 html {
-    color-scheme: dark;
+    color-scheme: light;
 }
 
 body {
     margin: 0;
     min-height: 100vh;
     background:
-        radial-gradient(circle at 15% 0%, rgba(77, 208, 196, 0.05), transparent 45%),
+        radial-gradient(circle at 15% 0%, rgba(22, 143, 136, 0.09), transparent 45%),
         var(--bg);
     color: var(--text);
     font-family: 'Inter', system-ui, sans-serif;
@@ -50,14 +50,10 @@ img.emoji {
 }
 
 .contenedor {
-    max-width: 1320px;
+    max-width: 1100px;
     margin: 0 auto;
     padding: 28px 24px 64px;
 }
-
-/* =========================================================
-   HEADER
-========================================================= */
 
 header {
     margin-bottom: 24px;
@@ -90,10 +86,6 @@ h2 {
     border-bottom: 1px solid var(--border);
 }
 
-/* =========================================================
-   PANELES / FORMULARIOS
-========================================================= */
-
 .panel {
     background: var(--bg-panel);
     border: 1px solid var(--border);
@@ -104,13 +96,9 @@ h2 {
 
 .form-fila {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 14px;
     align-items: end;
-}
-
-.pacientes-form-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 
 label {
@@ -133,7 +121,6 @@ select {
     font-family: 'Inter', sans-serif;
     font-size: 0.92rem;
     padding: 9px 12px;
-    min-height: 40px;
 }
 
 input:focus,
@@ -143,23 +130,13 @@ select:focus {
     box-shadow: 0 0 0 3px var(--accent-glow);
 }
 
-input[readonly] {
-    opacity: 0.82;
-    cursor: not-allowed;
-    background: #12181c;
-}
-
 input[type="date"] {
-    color-scheme: dark;
+    color-scheme: light;
 }
 
 select {
-    -webkit-appearance: none;
-    -moz-appearance: none;
     appearance: none;
-    background-color: var(--bg-elevated);
-    background-image:
-        linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
+    background-image: linear-gradient(45deg, transparent 50%, var(--text-muted) 50%),
         linear-gradient(135deg, var(--text-muted) 50%, transparent 50%);
     background-position: calc(100% - 18px) center, calc(100% - 13px) center;
     background-size: 5px 5px, 5px 5px;
@@ -167,14 +144,6 @@ select {
     padding-right: 34px;
     cursor: pointer;
 }
-
-select::-ms-expand {
-    display: none;
-}
-
-/* =========================================================
-   BOTONES
-========================================================= */
 
 button {
     font-family: 'Space Grotesk', sans-serif;
@@ -186,11 +155,10 @@ button {
     border-radius: var(--radius-sm);
     padding: 10px 16px;
     cursor: pointer;
-    transition: 0.18s ease;
 }
 
 button:hover {
-    background: #232c31;
+    background: #edf5f5;
     border-color: var(--accent-dim);
 }
 
@@ -216,44 +184,6 @@ button:disabled {
     border-color: var(--border-strong);
 }
 
-.btn-planilla {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #0a1413;
-    font-weight: 700;
-}
-
-.btn-planilla:hover {
-    background: #5fe0d3;
-    border-color: #5fe0d3;
-}
-
-.btn-limpiar-planilla {
-    background: transparent;
-    color: var(--text-faint);
-    border-color: var(--border);
-}
-
-.btn-limpiar-planilla:hover {
-    color: var(--danger);
-    border-color: var(--danger);
-    background: var(--danger-bg);
-}
-
-.btn-borrar-todo {
-    width: auto;
-    font-size: 0.76rem;
-    color: var(--text-faint);
-    background: transparent;
-    border-color: var(--border);
-}
-
-.btn-borrar-todo:hover {
-    color: var(--danger);
-    border-color: var(--danger);
-    background: var(--danger-bg);
-}
-
 .sesion {
     display: flex;
     align-items: center;
@@ -268,71 +198,6 @@ button:disabled {
     line-height: 1;
     background: transparent;
 }
-
-/* =========================================================
-   TABS PRINCIPALES
-========================================================= */
-
-.vista-tabs {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.vista-tab {
-    background: var(--bg-panel);
-    border: 1px solid var(--border);
-    color: var(--text-muted);
-    padding: 10px 16px;
-    border-radius: 999px;
-    transition: 0.2s ease;
-}
-
-.vista-tab:hover {
-    border-color: var(--accent-dim);
-    color: var(--text);
-}
-
-.vista-tab.activo {
-    background: var(--accent);
-    border-color: var(--accent);
-    color: #0a1413;
-}
-
-.tabs-periodo {
-    display: flex;
-    gap: 4px;
-    margin-bottom: 16px;
-    border-bottom: 1px solid var(--border);
-}
-
-.tab-periodo {
-    font-family: 'Space Grotesk', sans-serif;
-    font-weight: 600;
-    font-size: 0.82rem;
-    color: var(--text-muted);
-    background: transparent;
-    border: none;
-    border-bottom: 2px solid transparent;
-    padding: 9px 16px;
-    border-radius: 0;
-}
-
-.tab-periodo:hover {
-    background: transparent;
-    color: var(--text);
-    border-color: transparent;
-}
-
-.tab-periodo.activo {
-    color: var(--accent);
-    border-bottom-color: var(--accent);
-}
-
-/* =========================================================
-   CARDS
-========================================================= */
 
 .cards {
     display: grid;
@@ -370,9 +235,28 @@ button:disabled {
     margin-top: 2px;
 }
 
-/* =========================================================
-   TABLAS
-========================================================= */
+.tabs-periodo {
+    display: flex;
+    gap: 4px;
+    margin-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+}
+
+.tab-periodo {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 0.82rem;
+    color: var(--text-muted);
+    background: transparent;
+    border: none;
+    border-bottom: 2px solid transparent;
+    padding: 9px 16px;
+}
+
+.tab-periodo.activo {
+    color: var(--accent);
+    border-bottom-color: var(--accent);
+}
 
 .tabla-scroll {
     overflow-x: auto;
@@ -385,7 +269,6 @@ table {
     border-collapse: collapse;
     font-family: 'JetBrains Mono', monospace;
     font-size: 0.82rem;
-    min-width: 720px;
 }
 
 thead th {
@@ -421,6 +304,37 @@ tbody tr:hover {
     font-weight: 600;
 }
 
+.pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Inter', sans-serif;
+    font-size: 0.72rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding: 3px 9px;
+    border-radius: 999px;
+}
+
+.pill::before {
+    content: "";
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: currentColor;
+}
+
+.pill-positivo {
+    color: var(--danger);
+    background: var(--danger-bg);
+}
+
+.pill-negativo {
+    color: var(--ok);
+    background: var(--ok-bg);
+}
+
 .sin-datos {
     text-align: center;
     color: var(--text-faint);
@@ -437,6 +351,19 @@ tbody tr:hover {
     margin-right: 8px;
 }
 
+.fila-historial-eliminar {
+    width: auto;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    border-color: var(--danger);
+    color: var(--danger);
+    background: transparent;
+}
+
+.fila-historial-eliminar:hover {
+    background: var(--danger-bg);
+}
+
 .acciones-globales {
     display: flex;
     justify-content: flex-end;
@@ -445,43 +372,49 @@ tbody tr:hover {
     flex-wrap: wrap;
 }
 
-/* =========================================================
-   HISTORIAL / ELIMINAR
-========================================================= */
-
-.fila-historial-eliminar,
-.fila-paciente-eliminar {
+.btn-borrar-todo {
     width: auto;
-    padding: 4px 10px;
-    font-size: 0.72rem;
-    border-color: var(--danger);
-    color: var(--danger);
+    font-size: 0.76rem;
+    color: var(--text-faint);
     background: transparent;
-    white-space: nowrap;
+    border-color: var(--border);
 }
 
-.fila-historial-eliminar:hover,
-.fila-paciente-eliminar:hover {
+.btn-borrar-todo:hover {
+    color: var(--danger);
+    border-color: var(--danger);
     background: var(--danger-bg);
 }
 
 /* =========================================================
-   BUSCADOR SEROLOGÍA
+   TABS GENERALES
 ========================================================= */
 
-.buscador-serologia {
-    display: grid;
-    grid-template-columns: minmax(220px, 340px) auto;
-    gap: 14px;
-    align-items: end;
-    margin-bottom: 14px;
+.tabs-vistas {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
 }
 
-.buscador-serologia-acciones {
-    display: flex;
-    gap: 10px;
-    justify-content: flex-start;
-    align-items: end;
+.tab-vista {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 10px 16px;
+    border-radius: 999px;
+    transition: 0.2s ease;
+}
+
+.tab-vista:hover {
+    border-color: var(--accent-dim);
+    color: var(--text);
+}
+
+.tab-vista.activo {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0a1413;
 }
 
 /* =========================================================
@@ -498,7 +431,7 @@ tbody tr:hover {
 
 .analisis-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
     gap: 10px;
     background: var(--bg-elevated);
     border: 1px solid var(--border);
@@ -510,7 +443,7 @@ tbody tr:hover {
     display: flex;
     align-items: center;
     gap: 10px;
-    background: #11171b;
+    background: #ffffff;
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 10px 12px;
@@ -521,7 +454,7 @@ tbody tr:hover {
 
 .check-analisis:hover {
     border-color: var(--accent-dim);
-    background: #182026;
+    background: #edf7f6;
 }
 
 .check-analisis input {
@@ -530,13 +463,37 @@ tbody tr:hover {
     margin: 0;
     accent-color: var(--accent);
     flex-shrink: 0;
-    min-height: auto;
 }
 
 .check-analisis span {
-    font-size: 0.84rem;
-    line-height: 1.25;
+    font-size: 0.88rem;
     color: var(--text);
+}
+
+.tabla-pacientes th,
+.tabla-pacientes td {
+    text-align: center;
+}
+
+.tabla-pacientes th:nth-child(2),
+.tabla-pacientes td:nth-child(2),
+.tabla-pacientes th:nth-child(3),
+.tabla-pacientes td:nth-child(3),
+.tabla-pacientes th:nth-child(4),
+.tabla-pacientes td:nth-child(4) {
+    text-align: left;
+}
+
+.marca-si {
+    color: var(--ok);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.marca-no {
+    color: var(--danger);
+    font-weight: 700;
+    font-size: 1rem;
 }
 
 .pacientes-acciones {
@@ -547,6 +504,43 @@ tbody tr:hover {
     flex-wrap: wrap;
 }
 
+.btn-planilla {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0a1413;
+    font-weight: 700;
+}
+
+.btn-planilla:hover {
+    background: #5fe0d3;
+    border-color: #5fe0d3;
+}
+
+.btn-limpiar-planilla {
+    background: transparent;
+    color: var(--text-faint);
+    border-color: var(--border);
+}
+
+.btn-limpiar-planilla:hover {
+    color: var(--danger);
+    border-color: var(--danger);
+    background: var(--danger-bg);
+}
+
+.fila-paciente-eliminar {
+    width: auto;
+    padding: 4px 10px;
+    font-size: 0.72rem;
+    border-color: var(--danger);
+    color: var(--danger);
+    background: transparent;
+}
+
+.fila-paciente-eliminar:hover {
+    background: var(--danger-bg);
+}
+
 .ayuda-planilla {
     color: var(--text-faint);
     font-size: 0.82rem;
@@ -554,78 +548,8 @@ tbody tr:hover {
     line-height: 1.45;
 }
 
-/* ---------- TABLA PACIENTES ---------- */
-.tabla-pacientes {
-    min-width: 1450px;
-}
-
-.tabla-pacientes th,
-.tabla-pacientes td {
-    font-size: 0.78rem;
-    padding: 8px 10px;
-    text-align: center;
-}
-
-.tabla-pacientes th:nth-child(2),
-.tabla-pacientes td:nth-child(2),
-.tabla-pacientes th:nth-child(3),
-.tabla-pacientes td:nth-child(3),
-.tabla-pacientes th:nth-child(4),
-.tabla-pacientes td:nth-child(4),
-.tabla-pacientes th:nth-child(5),
-.tabla-pacientes td:nth-child(5) {
-    text-align: left;
-}
-
-.tabla-pacientes td:nth-child(3) {
-    font-weight: 700;
-    color: var(--accent);
-}
-
-.tabla-pacientes td:nth-child(4),
-.tabla-pacientes td:nth-child(5) {
-    font-weight: 600;
-}
-
 /* =========================================================
-   SEROLOGÍA
-========================================================= */
-
-#vistaSerologia .form-fila {
-    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-}
-
-#vistaSerologia table {
-    min-width: 1150px;
-}
-
-#tipoPacienteSerologia,
-#sectorPacienteSerologia,
-#apellido,
-#nombre,
-#semanasGestacion,
-#fechaNacimientoSerologia {
-    background: #12181c;
-}
-
-#cuerpoHistorial td,
-#cuerpoBusquedaSerologia td {
-    font-size: 0.78rem;
-}
-
-#cuerpoHistorial td:nth-child(2),
-#cuerpoBusquedaSerologia td:nth-child(2) {
-    font-weight: 700;
-    color: var(--accent);
-}
-
-#cuerpoHistorial td:nth-child(4),
-#cuerpoBusquedaSerologia td:nth-child(4) {
-    font-weight: 600;
-}
-
-/* =========================================================
-   AUTH / LOGIN / REGISTRO
+   AUTH / ADMIN
 ========================================================= */
 
 ::-webkit-scrollbar {
@@ -673,7 +597,6 @@ tbody tr:hover {
 }
 
 .auth-form {
-    display: flex;
     flex-direction: column;
     gap: 0;
 }
@@ -727,10 +650,6 @@ tbody tr:hover {
     margin: 0 0 24px;
 }
 
-/* =========================================================
-   MODAL ADMIN
-========================================================= */
-
 .modal-admin {
     display: none;
     position: fixed;
@@ -743,9 +662,9 @@ tbody tr:hover {
     padding: 20px;
 }
 
-.modal-admin-contenido {
-    width: min(720px, 100%);
-    max-height: 85vh;
+.adminBox {
+    width: min(520px, 100%);
+    max-height: 80vh;
     background: var(--bg-panel);
     border: 1px solid var(--border-strong);
     border-radius: var(--radius);
@@ -755,182 +674,328 @@ tbody tr:hover {
     flex-direction: column;
 }
 
-.modal-admin-header {
+.adminHeader {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
     padding: 16px 18px;
     border-bottom: 1px solid var(--border);
 }
 
-.modal-admin-header h2 {
-    margin: 0;
-    padding: 0;
+.adminHeader h2 {
     border: none;
+    padding: 0;
+    margin: 0;
     font-size: 1rem;
 }
 
+.adminHeader button {
+    width: auto;
+    margin: 0;
+    padding: 4px 10px;
+    background: transparent;
+}
+
 .lista-pendientes {
-    padding: 16px 18px;
+    padding: 16px 20px 20px;
     overflow-y: auto;
+}
+
+.lista-pendientes p {
+    color: var(--text-muted);
+    font-size: 0.88rem;
+    text-align: center;
+    padding: 20px 0;
 }
 
 .filaPendiente {
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px 0;
-    border-bottom: 1px solid var(--border);
-    flex-wrap: wrap;
-}
-
-.filaPendiente:last-child {
-    border-bottom: none;
+    gap: 8px;
+    padding: 10px 12px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    margin-bottom: 8px;
 }
 
 .filaPendiente span {
-    color: var(--text);
-    font-size: 0.92rem;
-    word-break: break-word;
+    flex: 1;
+    font-size: 0.85rem;
+    word-break: break-all;
 }
 
-.btnAprobar {
-    background: var(--ok);
+.filaPendiente button {
+    width: auto;
+    margin: 0;
+    padding: 7px 10px;
+    font-size: 0.76rem;
+    white-space: nowrap;
+}
+
+.filaPendiente .btnAprobar {
     border-color: var(--ok);
-    color: #07140a;
-    font-weight: 700;
-    padding: 8px 12px;
+    color: var(--ok);
 }
 
-.btnAprobar:hover {
-    filter: brightness(1.05);
-}
-
-.btnRechazar {
-    background: transparent;
+.filaPendiente .btnRechazar {
     border-color: var(--danger);
     color: var(--danger);
-    padding: 8px 12px;
 }
 
-.btnRechazar:hover {
-    background: var(--danger-bg);
+@media (max-width: 900px) {
+    .analisis-grid {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    }
 }
 
-/* =========================================================
-   RESPONSIVE
-========================================================= */
-
-@media (max-width: 1000px) {
+@media (max-width: 640px) {
     .contenedor {
-        padding: 22px 16px 48px;
-    }
-
-    header {
-        flex-direction: column;
-        align-items: stretch;
-    }
-
-    .sesion {
-        justify-content: flex-end;
-    }
-
-    .cards {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-
-    .pacientes-form-grid {
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    }
-
-    #vistaSerologia .form-fila {
-        grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    }
-}
-
-@media (max-width: 720px) {
-    .buscador-serologia,
-    .form-fila,
-    .pacientes-form-grid,
-    #vistaSerologia .form-fila {
-        grid-template-columns: 1fr;
-    }
-
-    .cards {
-        grid-template-columns: 1fr;
-    }
-
-    .acciones-globales,
-    .pacientes-acciones {
-        justify-content: stretch;
-    }
-
-    .acciones-globales button,
-    .pacientes-acciones button {
-        width: 100%;
-    }
-
-    .vista-tabs {
-        flex-direction: column;
-    }
-
-    .vista-tab {
-        width: 100%;
-        text-align: center;
-    }
-
-    .tabs-periodo {
-        flex-wrap: wrap;
-    }
-
-    .tab-periodo {
-        flex: 1 1 auto;
-        text-align: center;
-    }
-
-    .tabla-pacientes {
-        min-width: 1250px;
-    }
-
-    #vistaSerologia table {
-        min-width: 1050px;
-    }
-
-    .modal-admin-contenido {
-        width: 100%;
-        max-height: 90vh;
-    }
-}
-
-@media (max-width: 520px) {
-    .panel {
-        padding: 16px;
+        padding: 20px 14px 48px;
     }
 
     h1 {
-        font-size: 1.45rem;
+        font-size: 1.35rem;
     }
 
-    h2 {
-        font-size: 0.98rem;
+    input,
+    select,
+    button {
+        font-size: 16px;
     }
 
-    .auth-card {
-        padding: 24px 18px;
+    .tabs-vistas {
+        gap: 6px;
     }
 
-    .modal-admin-header,
-    .lista-pendientes {
-        padding-left: 14px;
-        padding-right: 14px;
+    .tab-vista {
+        width: 100%;
+        text-align: center;
     }
 
-    .tabla-pacientes th,
-    .tabla-pacientes td,
-    #cuerpoHistorial td,
-    #cuerpoBusquedaSerologia td {
-        font-size: 0.74rem;
+    .pacientes-acciones,
+    .acciones-globales {
+        flex-direction: column;
     }
+
+    .pacientes-acciones button,
+    .acciones-globales button {
+        width: 100%;
+    }
+}
+
+.vista-tabs {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.vista-tab {
+    background: var(--bg-panel);
+    border: 1px solid var(--border);
+    color: var(--text-muted);
+    padding: 10px 16px;
+    border-radius: 999px;
+    transition: 0.2s ease;
+}
+
+.vista-tab:hover {
+    border-color: var(--accent-dim);
+    color: var(--text);
+}
+
+.vista-tab.activo {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: #0a1413;
+}
+
+/* =========================================================
+   PACIENTES - AJUSTE VISUAL
+========================================================= */
+
+.pacientes-form-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    gap: 14px;
+    margin-bottom: 16px;
+}
+
+.pacientes-analisis-bloque {
+    margin-top: 8px;
+}
+
+.pacientes-analisis-bloque label {
+    display: block;
+    margin-bottom: 10px;
+}
+
+.analisis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(180px, 1fr));
+    gap: 12px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+}
+
+.analisis-chip {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 48px;
+    padding: 10px 14px;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: 0.2s ease;
+    user-select: none;
+    margin: 0;
+}
+
+.analisis-chip:hover {
+    border-color: var(--accent-dim);
+    background: #edf7f6;
+}
+
+.analisis-chip input[type="checkbox"] {
+    width: 17px;
+    height: 17px;
+    margin: 0;
+    accent-color: var(--accent);
+    flex-shrink: 0;
+}
+
+.analisis-chip span {
+    display: inline-block;
+    color: var(--text);
+    font-size: 0.92rem;
+    font-weight: 500;
+    line-height: 1.2;
+}
+
+.pacientes-acciones-superior {
+    display: flex;
+    justify-content: flex-start;
+    margin-top: 16px;
+}
+
+.pacientes-header-panel {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 14px;
+    flex-wrap: wrap;
+}
+
+.pacientes-header-panel h2 {
+    margin-bottom: 0;
+    flex: 1;
+}
+
+.acciones-pacientes {
+    margin-top: 0;
+}
+
+.pacientes-leyenda {
+    margin-top: 14px;
+    color: var(--text-faint);
+    font-size: 0.84rem;
+    line-height: 1.45;
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: rgba(255, 255, 255, 0.02);
+}
+
+/* TABLA PACIENTES */
+#vistaPacientes table th,
+#vistaPacientes table td {
+    text-align: center;
+}
+
+#vistaPacientes table th:nth-child(2),
+#vistaPacientes table td:nth-child(2),
+#vistaPacientes table th:nth-child(3),
+#vistaPacientes table td:nth-child(3),
+#vistaPacientes table th:nth-child(4),
+#vistaPacientes table td:nth-child(4) {
+    text-align: left;
+}
+
+.marca-si {
+    color: var(--ok);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+.marca-no {
+    color: var(--danger);
+    font-weight: 700;
+    font-size: 1rem;
+}
+
+/* RESPONSIVE */
+@media (max-width: 900px) {
+    .pacientes-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .analisis-grid {
+        grid-template-columns: repeat(2, minmax(160px, 1fr));
+    }
+}
+
+@media (max-width: 640px) {
+    .analisis-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .pacientes-acciones-superior .btn-principal,
+    .acciones-pacientes button {
+        width: 100%;
+    }
+}
+
+/* ===== FIX visual definitivo de checks en Pacientes ===== */
+
+#vistaPacientes .pacientes-analisis-bloque > label {
+    display: block;
+    margin: 0 0 10px;
+}
+
+#vistaPacientes .analisis-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    gap: 14px;
+    background: var(--bg-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-sm);
+    padding: 14px;
+}
+
+#vistaPacientes .analisis-chip {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 12px;
+    min-height: 46px;
+    padding: 0 14px;
+    margin: 0;
+    background: #ffffff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    user-select: none;
+    transition: 0.2s ease;
+    
+    /* esto pisa el estilo global de label */
+    font-size: 0.92rem;
+    font-weight: 600;
+    color: var(--text);
+    text-transform: none;
+    letter-spacing: 0;
 }
