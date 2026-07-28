@@ -97,6 +97,18 @@ const tabsPeriodo = document.querySelectorAll(".tab-periodo");
    HELPERS
 ========================================================= */
 
+funtion formatearFechaCompleta(fecha) {
+    if (!(fecha instanceof Date) || isNaN(fecha.getTime())) {
+        return "—";
+    }
+   
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const anio = fecha.getFullYear();
+
+   return `${dia}/${mes}/${anio}`;
+}
+
 function parsearFecha(fechaTexto) {
     if (!fechaTexto) return new Date(0);
 
@@ -121,17 +133,6 @@ function formatearFechaCorta(fecha) {
     const mes = String(fecha.getMonth() + 1).padStart(2, "0");
 
     return `${dia}/${mes}`;
-}
-
-funtion formatearFechaCompleta(fecha) {
-    if (!(fecha instanceof Date) || isNaN(fecha.getTime())) {
-        return "—";
-    }
-    const dia = String(fecha.getDate()).padStart(2, "0");
-    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-    const anio = fecha.getFullYear();
-
-   return `${dia}/${mes}/${anio}`;
 }
 
 function fechaHoyTexto() {
