@@ -97,16 +97,14 @@ const tabsPeriodo = document.querySelectorAll(".tab-periodo");
    HELPERS
 ========================================================= */
 
-funtion formatearFechaCompleta(fecha) {
+function formatearFechaCompleta(fecha) {
     if (!(fecha instanceof Date) || isNaN(fecha.getTime())) {
         return "—";
     }
-   
     const dia = String(fecha.getDate()).padStart(2, "0");
     const mes = String(fecha.getMonth() + 1).padStart(2, "0");
     const anio = fecha.getFullYear();
-
-   return `${dia}/${mes}/${anio}`;
+    return `${dia}/${mes}/${anio}`;
 }
 
 function parsearFecha(fechaTexto) {
@@ -279,18 +277,18 @@ function actualizarModoPacienteSerologia(limpiarDatos) {
 
     camposManual.forEach(function (campo) {
         if (!campo) return;
-        campo.readOnly = !rnManual;
-        campo.placeholder = rnManual ? "Completar manualmente" : "Se autocompleta";
+        campo.readOnly = false;
+        campo.placeholder = rnManual ? "Completar manualmente" : "Ingresar apellido o autocompletar";
     });
 
     if (inputSemanasGestacion) {
-        inputSemanasGestacion.readOnly = true;
-        inputSemanasGestacion.placeholder = rnManual ? "No corresponde" : "Se autocompleta";
+        inputSemanasGestacion.readOnly = rnManual;
+        inputSemanasGestacion.placeholder = rnManual ? "No corresponde" : "Semanas";
         if (rnManual) inputSemanasGestacion.value = "";
     }
 
     if (bloqueSemanasGestacionSerologia) {
-    bloqueSemanasGestacionSerologia.style.display = rnManual ? "none" : "";
+        bloqueSemanasGestacionSerologia.style.display = rnManual ? "none" : "";
     }
 
     if (inputDni) {
@@ -307,7 +305,6 @@ function actualizarModoPacienteSerologia(limpiarDatos) {
 
 function completarPacienteEnSerologia(paciente) {
     if (!paciente) {
-        limpiarFormularioSerologiaPaciente();
         return;
     }
 
@@ -330,10 +327,7 @@ function autocompletarSerologiaPorDni() {
     if (esRNManual()) return;
 
     const dni = inputDni.value.trim();
-    if (!dni) {
-        limpiarFormularioSerologiaPaciente();
-        return;
-    }
+    if (!dni) return;
 
     const paciente = buscarPacientePorDniOId(dni);
     completarPacienteEnSerologia(paciente);
@@ -390,9 +384,7 @@ function construirEntradaSerologia() {
     }
 
     if (!apellido) {
-        alert(tipoPacienteTexto === "RN"
-            ? "Completá el apellido del recién nacido."
-            : "Buscá un paciente cargado en la pestaña Pacientes.");
+        alert("Completá el apellido del paciente.");
         return null;
     }
 
@@ -821,3 +813,4 @@ actualizarOpcionesResultado();
 renderResumenPorReactivo();
 renderResultadosPorReactivo();
 renderHistorial();
+iniciarEscuchaDatos();
