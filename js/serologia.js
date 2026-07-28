@@ -124,6 +124,9 @@ function formatearFechaCorta(fecha) {
 }
 
 funtion formatearFechaCompleta(fecha) {
+    if (!(fecha instanceof Date) || isNaN(fecha.getTime())) {
+        return "—";
+    }
     const dia = String(fecha.getDate()).padStart(2, "0");
     const mes = String(fecha.getMonth() + 1).padStart(2, "0");
     const anio = fecha.getFullYear();
