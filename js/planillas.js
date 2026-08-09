@@ -15,17 +15,47 @@ function textoTipoPacientePlanilla(tipoPaciente) {
     return tipoPaciente === "RN" ? "R/N" : "Embarazada";
 }
 
-function generarPlanillaPacientesPDF() {
+function claveAnalisisPaciente(dni, reactivo) {
+    return `${String(dni || "").trim().toUpperCase()}|${reactivo || ""}`;
+}
+
+async function generarPlanillaPacientesPDF() {
 
     if (typeof window.obtenerPacientesPlanilla !== "function") {
         alert("No se pudo leer la planilla de pacientes.");
         return;
     }
 
-    const pacientes = window.obtenerPacientesPlanilla();
+    const pacientes = window.obtenerPacientesPlanilla() || [];
+    const analisisRealizados = new Set();
 
-    if (!pacientes || pacientes.length === 0) {
-        alert("No hay pacientes cargados en la planilla.");
+    if (window.db) {
+        try {
+            const resultados = await db.collection("analisisSerologia").get();
+            resultados.forEach(function (resultado) {
+                const datos = resultado.data();
+                analisisRealizados.add(claveAnalisisPaciente(datos.dni, datos.reactivo));
+            });
+        } catch (error) {
+            console.error(error);
+            alert("No se pudieron verificar los resultados cargados: " + error.message);
+            return;
+        }
+    }
+
+    const analisisPendiente = function (paciente, reactivo) {
+        return Boolean(paciente.analisis && paciente.analisis[reactivo]) &&
+            !analisisRealizados.has(claveAnalisisPaciente(paciente.dni, reactivo));
+    };
+
+    const pacientesPendientes = pacientes.filter(function (paciente) {
+        return Object.keys(paciente.analisis || {}).some(function (reactivo) {
+            return analisisPendiente(paciente, reactivo);
+        });
+    });
+
+    if (pacientesPendientes.length === 0) {
+        alert("No hay análisis pendientes en la planilla.");
         return;
     }
 
@@ -57,7 +87,7 @@ function generarPlanillaPacientesPDF() {
     pdf.setFontSize(9);
     pdf.setTextColor(90, 90, 90);
     pdf.text(
-        `Generado el ${fechaTexto} a las ${horaTexto}  ·  ${pacientes.length} paciente${pacientes.length === 1 ? "" : "s"}`,
+        `Generado el ${fechaTexto} a las ${horaTexto}  ·  ${pacientesPendientes.length} paciente${pacientesPendientes.length === 1 ? "" : "s"}`,
         anchoPagina / 2,
         20,
         { align: "center" }
@@ -70,9 +100,7 @@ function generarPlanillaPacientesPDF() {
     // ------------------------------------------------------------
     // Filas
     // ------------------------------------------------------------
-    const filas = pacientes.map(function (p, index) {
-        const analisis = p.analisis || {};
-
+    const filas = pacientesPendientes.map(function (p, index) {
         return [
             String(index + 1),
             textoTipoPacientePlanilla(p.tipoPaciente),
@@ -82,13 +110,13 @@ function generarPlanillaPacientesPDF() {
             p.nombre || "",
             p.semanasGestacion || "",
             formatearFechaNacimientoPlanilla(p.fechaNacimiento || ""),
-            analisis["VDRL"] ? "" : "—",
-            analisis["TPPA ELISA"] ? "" : "—",
-            analisis["HIV ELISA"] ? "" : "—",
-            analisis["TOXO HAI"] ? "" : "—",
-            analisis["CHAGAS HAI"] ? "" : "—",
-            analisis["CHAGAS ELISA"] ? "" : "—",
-            analisis["HEP B ELISA"] ? "" : "—"
+            analisisPendiente(p, "VDRL") ? "" : "—",
+            analisisPendiente(p, "TPPA ELISA") ? "" : "—",
+            analisisPendiente(p, "HIV ELISA") ? "" : "—",
+            analisisPendiente(p, "TOXO HAI") ? "" : "—",
+            analisisPendiente(p, "CHAGAS HAI") ? "" : "—",
+            analisisPendiente(p, "CHAGAS ELISA") ? "" : "—",
+            analisisPendiente(p, "HEP B ELISA") ? "" : "—"
         ];
     });
 
