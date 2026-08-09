@@ -397,4 +397,3 @@ auth.onAuthStateChanged(async function (user) {
         mostrarSoloPantalla(pantallaLogin, "flex");
     }
 });
-
