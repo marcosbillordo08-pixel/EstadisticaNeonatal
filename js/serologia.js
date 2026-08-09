@@ -419,7 +419,23 @@ async function guardarEntrada() {
     if (btnGuardar) btnGuardar.disabled = true;
 
     try {
-        await db.collection(COLECCION_ANALISIS).doc(String(entrada.id)).set(entrada);
+        const lote = db.batch();
+        lote.set(db.collection(COLECCION_ANALISIS).doc(String(entrada.id)), entrada);
+
+        const pacientePlanilla = obtenerPacientesPlanillaSeguro().find(function (paciente) {
+            return String(paciente.dni || "").trim() === entrada.dni;
+        });
+
+        if (pacientePlanilla && pacientePlanilla.analisis && pacientePlanilla.analisis[entrada.reactivo]) {
+            const actualizacionAnalisis = {};
+            actualizacionAnalisis[`analisis.${entrada.reactivo}`] = false;
+            lote.update(
+                db.collection("planillaPacientes").doc(String(pacientePlanilla.id)),
+                actualizacionAnalisis
+            );
+        }
+
+        await lote.commit();
 
         if (selectReactivo) selectReactivo.value = REACTIVOS[0];
         actualizarOpcionesResultado();
