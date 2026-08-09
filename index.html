@@ -219,10 +219,17 @@
                 <div class="panel">
                     <h2>📋 Pacientes cargados</h2>
 
+                    <div class="buscador-pacientes">
+                        <label for="buscarPacientePlanilla">Buscar paciente</label>
+                        <input type="search" id="buscarPacientePlanilla"
+                            placeholder="DNI, ID, apellido, nombre, sector o tipo">
+                    </div>
+
                     <div class="tabla-scroll">
                         <table class="tabla-pacientes">
                             <thead>
                                 <tr>
+                                    <th>Fecha y hora de carga</th>
                                     <th>Tipo</th>
                                     <th>Sector</th>
                                     <th>DNI / ID</th>
@@ -242,7 +249,7 @@
                             </thead>
                             <tbody id="cuerpoTablaPacientesPlanilla">
                                 <tr>
-                                    <td colspan="15" class="sin-datos">
+                                    <td colspan="16" class="sin-datos">
                                         Todavía no agregaste pacientes a la planilla.
                                     </td>
                                 </tr>
