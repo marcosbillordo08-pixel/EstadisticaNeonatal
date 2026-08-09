@@ -475,13 +475,23 @@ tbody tr:hover {
     text-align: center;
 }
 
-.tabla-pacientes th:nth-child(2),
-.tabla-pacientes td:nth-child(2),
 .tabla-pacientes th:nth-child(3),
 .tabla-pacientes td:nth-child(3),
 .tabla-pacientes th:nth-child(4),
-.tabla-pacientes td:nth-child(4) {
+.tabla-pacientes td:nth-child(4),
+.tabla-pacientes th:nth-child(5),
+.tabla-pacientes td:nth-child(5),
+.tabla-pacientes th:nth-child(6),
+.tabla-pacientes td:nth-child(6) {
     text-align: left;
+}
+
+.buscador-pacientes {
+    margin-bottom: 14px;
+}
+
+.buscador-pacientes input {
+    width: min(100%, 480px);
 }
 
 .marca-si {
@@ -917,12 +927,14 @@ tbody tr:hover {
     text-align: center;
 }
 
-#vistaPacientes table th:nth-child(2),
-#vistaPacientes table td:nth-child(2),
 #vistaPacientes table th:nth-child(3),
 #vistaPacientes table td:nth-child(3),
 #vistaPacientes table th:nth-child(4),
-#vistaPacientes table td:nth-child(4) {
+#vistaPacientes table td:nth-child(4),
+#vistaPacientes table th:nth-child(5),
+#vistaPacientes table td:nth-child(5),
+#vistaPacientes table th:nth-child(6),
+#vistaPacientes table td:nth-child(6) {
     text-align: left;
 }
 
