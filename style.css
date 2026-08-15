@@ -551,6 +551,20 @@ tbody tr:hover {
     background: var(--danger-bg);
 }
 
+.fila-paciente-editar {
+    width: auto;
+    padding: 4px 10px;
+    margin-right: 4px;
+    font-size: 0.72rem;
+    border-color: var(--accent);
+    color: var(--accent);
+    background: transparent;
+}
+
+.fila-paciente-editar:hover {
+    background: #edf7f6;
+}
+
 .ayuda-planilla {
     color: var(--text-faint);
     font-size: 0.82rem;
