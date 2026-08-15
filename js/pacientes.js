@@ -12,6 +12,7 @@ const COLECCION_PLANILLA = "planillaPacientes";
 
 let pacientesPlanilla = [];
 window.listenerPlanilla = null;
+let idPacienteEnEdicion = null;
 
 /* =========================================================
    ELEMENTOS DOM
@@ -41,6 +42,7 @@ const bloquePacienteFechaNacimiento = document.getElementById("bloquePacienteFec
 
 // Acciones
 const btnAgregarPacientePlanilla = document.getElementById("btnAgregarPacientePlanilla");
+const btnCancelarEdicionPaciente = document.getElementById("btnCancelarEdicionPaciente");
 const btnLimpiarPlanilla = document.getElementById("btnLimpiarPlanilla");
 
 // Tabla
@@ -79,6 +81,15 @@ function formatearFechaNacimiento(fechaISO) {
     return `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
 
+function formatearFechaCarga(valor) {
+    if (!valor) return "â€”";
+    const fecha = typeof valor.toDate === "function" ? valor.toDate() : new Date(valor);
+    if (isNaN(fecha.getTime())) return "â€”";
+    return fecha.toLocaleString("es-AR", {
+        day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"
+    });
+}
+
 function generarIdRN(apellido, fechaNacimiento) {
     const apellidoLimpio = normalizarMayus(apellido).replace(/\s+/g, "");
     const fecha = fechaNacimiento || "SINFECHA";
@@ -107,6 +118,19 @@ function limpiarChecksAnalisis() {
     gridAnalisisPacientes.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
         checkbox.checked = false;
     });
+}
+
+function cargarChecksAnalisis(analisis) {
+    if (!gridAnalisisPacientes) return;
+    gridAnalisisPacientes.querySelectorAll('input[type="checkbox"]').forEach(function (checkbox) {
+        checkbox.checked = Boolean(analisis && analisis[checkbox.value]);
+    });
+}
+
+function actualizarEstadoEdicion() {
+    const editando = idPacienteEnEdicion !== null;
+    if (btnAgregarPacientePlanilla) btnAgregarPacientePlanilla.textContent = editando ? "Guardar cambios" : "Agregar paciente";
+    if (btnCancelarEdicionPaciente) btnCancelarEdicionPaciente.style.display = editando ? "inline-block" : "none";
 }
 
 function marcaAnalisis(valor) {
@@ -235,7 +259,7 @@ window.iniciarEscuchaPlanilla = iniciarEscuchaPlanilla;
    CREAR PACIENTE
 ========================================================= */
 
-function construirPacienteDesdeFormulario() {
+function construirPacienteDesdeFormulario(idExistente, fechaCargaExistente) {
     const tipoPaciente = obtenerTipoPacienteActual();
     const sector = normalizarTexto(inputPacienteSector ? inputPacienteSector.value : "");
     const apellido = normalizarMayus(inputPacienteApellido ? inputPacienteApellido.value : "");
@@ -257,7 +281,8 @@ function construirPacienteDesdeFormulario() {
         const idRN = generarIdRN(apellido, fechaNacimiento);
 
         return {
-            id: Date.now(),
+            id: idExistente || Date.now(),
+            fechaCarga: fechaCargaExistente || Date.now(),
             dni: idRN,
             tipoPaciente: "RN",
             sector: sector,
@@ -284,9 +309,10 @@ function construirPacienteDesdeFormulario() {
     }
 
     return {
-        id: Date.now(),
+        id: idExistente || Date.now(),
+        fechaCarga: fechaCargaExistente || Date.now(),
         dni: dni,
-        tipoPaciente: "EMBARAZADA",
+        tipoPaciente: tipoPaciente,
         sector: sector,
         apellido: apellido,
         nombre: nombre,
@@ -303,10 +329,21 @@ function existePacienteDuplicado(paciente) {
 }
 
 async function agregarPacientePlanilla() {
-    const paciente = construirPacienteDesdeFormulario();
+    const pacienteAnterior = pacientesPlanilla.find(function (p) {
+        return String(p.id) === String(idPacienteEnEdicion);
+    });
+    const paciente = construirPacienteDesdeFormulario(
+        pacienteAnterior ? pacienteAnterior.id : null,
+        pacienteAnterior ? pacienteAnterior.fechaCarga : null
+    );
     if (!paciente) return;
 
-    if (existePacienteDuplicado(paciente)) {
+    const existeOtroConMismoDni = pacientesPlanilla.some(function (p) {
+        return String(p.id) !== String(paciente.id)
+            && String(p.dni || "").trim() === String(paciente.dni || "").trim();
+    });
+
+    if (existeOtroConMismoDni) {
         alert("Ese paciente ya está cargado en la planilla.");
         return;
     }
@@ -317,6 +354,7 @@ async function agregarPacientePlanilla() {
 
     try {
         await db.collection(COLECCION_PLANILLA).doc(String(paciente.id)).set(paciente);
+        idPacienteEnEdicion = null;
         limpiarFormularioPaciente();
     } catch (error) {
         console.error(error);
@@ -347,6 +385,32 @@ function limpiarFormularioPaciente() {
 
     limpiarChecksAnalisis();
     actualizarFormularioSegunTipoPaciente();
+    actualizarEstadoEdicion();
+}
+
+function editarPacientePlanilla(id) {
+    const paciente = pacientesPlanilla.find(function (p) { return String(p.id) === String(id); });
+    if (!paciente) return;
+    idPacienteEnEdicion = paciente.id;
+    if (inputPacienteTipo) inputPacienteTipo.value = paciente.tipoPaciente || "EMBARAZADA";
+    actualizarFormularioSegunTipoPaciente();
+    if (inputPacienteSector) inputPacienteSector.value = paciente.sector || "ADMISION";
+    if (inputPacienteDni) inputPacienteDni.value = paciente.tipoPaciente === "RN" ? "" : (paciente.dni || "");
+    if (inputPacienteApellido) inputPacienteApellido.value = paciente.apellido || "";
+    if (inputPacienteNombre) inputPacienteNombre.value = paciente.nombre || "";
+    if (inputPacienteSemanasGestacion) inputPacienteSemanasGestacion.value = paciente.semanasGestacion || "";
+    if (inputPacienteFechaNacimiento) inputPacienteFechaNacimiento.value = paciente.fechaNacimiento || "";
+    cargarChecksAnalisis(paciente.analisis);
+    actualizarEstadoEdicion();
+    const formulario = document.querySelector("#vistaPacientes .panel");
+    if (formulario) formulario.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+if (btnCancelarEdicionPaciente) {
+    btnCancelarEdicionPaciente.addEventListener("click", function () {
+        idPacienteEnEdicion = null;
+        limpiarFormularioPaciente();
+    });
 }
 
 /* =========================================================
@@ -404,7 +468,7 @@ function renderizarTablaPacientes() {
     if (pacientesPlanilla.length === 0) {
         cuerpoTablaPacientes.innerHTML = `
             <tr>
-                <td colspan="15" class="sin-datos">
+                <td colspan="16" class="sin-datos">
                     Todavía no agregaste pacientes a la planilla.
                 </td>
             </tr>
@@ -417,6 +481,7 @@ function renderizarTablaPacientes() {
 
         return `
             <tr>
+                <td>${formatearFechaCarga(p.fechaCarga || p.id)}</td>
                 <td>${p.tipoPaciente === "RN" ? "R/N" : "Embarazada"}</td>
                 <td>${p.sector || "—"}</td>
                 <td>${p.dni || "—"}</td>
@@ -432,6 +497,7 @@ function renderizarTablaPacientes() {
                 <td>${marcaAnalisis(analisis["CHAGAS ELISA"])}</td>
                 <td>${marcaAnalisis(analisis["HEP B ELISA"])}</td>
                 <td>
+                    <button class="fila-paciente-editar" data-id="${p.id}" type="button">Editar</button>
                     <button class="fila-paciente-eliminar" data-id="${p.id}" type="button">🗑️</button>
                 </td>
             </tr>
@@ -441,6 +507,12 @@ function renderizarTablaPacientes() {
     cuerpoTablaPacientes.querySelectorAll(".fila-paciente-eliminar").forEach(function (boton) {
         boton.addEventListener("click", function () {
             eliminarPacientePlanilla(Number(boton.dataset.id));
+        });
+    });
+
+    cuerpoTablaPacientes.querySelectorAll(".fila-paciente-editar").forEach(function (boton) {
+        boton.addEventListener("click", function () {
+            editarPacientePlanilla(boton.dataset.id);
         });
     });
 
