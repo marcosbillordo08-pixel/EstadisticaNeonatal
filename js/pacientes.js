@@ -32,6 +32,7 @@ const inputPacienteApellido = document.getElementById("pacienteApellido");
 const inputPacienteNombre = document.getElementById("pacienteNombre");
 const inputPacienteSemanasGestacion = document.getElementById("pacienteSemanasGestacion");
 const inputPacienteFechaNacimiento = document.getElementById("pacienteFechaNacimiento");
+const inputPacienteFechaCarga = document.getElementById("pacienteFechaCarga");
 
 // Bloques para ocultar / mostrar según tipo
 const bloquePacienteDni = document.getElementById("bloquePacienteDni");
@@ -88,6 +89,25 @@ function formatearFechaCarga(valor) {
     return fecha.toLocaleString("es-AR", {
         day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit"
     });
+}
+
+function fechaCargaParaInput(valor) {
+    const fecha = valor && typeof valor.toDate === "function" ? valor.toDate() : new Date(valor || Date.now());
+    if (isNaN(fecha.getTime())) return "";
+
+    const anio = fecha.getFullYear();
+    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
+    const dia = String(fecha.getDate()).padStart(2, "0");
+    const hora = String(fecha.getHours()).padStart(2, "0");
+    const minuto = String(fecha.getMinutes()).padStart(2, "0");
+    return `${anio}-${mes}-${dia}T${hora}:${minuto}`;
+}
+
+function obtenerFechaCargaFormulario() {
+    if (!inputPacienteFechaCarga || !inputPacienteFechaCarga.value) return Date.now();
+
+    const fecha = new Date(inputPacienteFechaCarga.value);
+    return isNaN(fecha.getTime()) ? Date.now() : fecha.getTime();
 }
 
 function generarIdRN(apellido, fechaNacimiento) {
@@ -259,7 +279,7 @@ window.iniciarEscuchaPlanilla = iniciarEscuchaPlanilla;
    CREAR PACIENTE
 ========================================================= */
 
-function construirPacienteDesdeFormulario(idExistente, fechaCargaExistente) {
+function construirPacienteDesdeFormulario(idExistente) {
     const tipoPaciente = obtenerTipoPacienteActual();
     const sector = normalizarTexto(inputPacienteSector ? inputPacienteSector.value : "");
     const apellido = normalizarMayus(inputPacienteApellido ? inputPacienteApellido.value : "");
@@ -282,7 +302,7 @@ function construirPacienteDesdeFormulario(idExistente, fechaCargaExistente) {
 
         return {
             id: idExistente || Date.now(),
-            fechaCarga: fechaCargaExistente || Date.now(),
+            fechaCarga: obtenerFechaCargaFormulario(),
             dni: idRN,
             tipoPaciente: "RN",
             sector: sector,
@@ -310,7 +330,7 @@ function construirPacienteDesdeFormulario(idExistente, fechaCargaExistente) {
 
     return {
         id: idExistente || Date.now(),
-        fechaCarga: fechaCargaExistente || Date.now(),
+        fechaCarga: obtenerFechaCargaFormulario(),
         dni: dni,
         tipoPaciente: tipoPaciente,
         sector: sector,
@@ -332,10 +352,7 @@ async function agregarPacientePlanilla() {
     const pacienteAnterior = pacientesPlanilla.find(function (p) {
         return String(p.id) === String(idPacienteEnEdicion);
     });
-    const paciente = construirPacienteDesdeFormulario(
-        pacienteAnterior ? pacienteAnterior.id : null,
-        pacienteAnterior ? pacienteAnterior.fechaCarga : null
-    );
+    const paciente = construirPacienteDesdeFormulario(pacienteAnterior ? pacienteAnterior.id : null);
     if (!paciente) return;
 
     const existeOtroConMismoDni = pacientesPlanilla.some(function (p) {
@@ -344,7 +361,7 @@ async function agregarPacientePlanilla() {
     });
 
     if (existeOtroConMismoDni) {
-        alert("Ese paciente ya está cargado en la planilla.");
+        alert("Ese paciente ya está cargado en la planilla. Usá el botón Editar de su fila para modificar sus datos o la fecha de carga.");
         return;
     }
 
@@ -382,6 +399,7 @@ function limpiarFormularioPaciente() {
     if (inputPacienteNombre) inputPacienteNombre.value = "";
     if (inputPacienteSemanasGestacion) inputPacienteSemanasGestacion.value = "";
     if (inputPacienteFechaNacimiento) inputPacienteFechaNacimiento.value = "";
+    if (inputPacienteFechaCarga) inputPacienteFechaCarga.value = fechaCargaParaInput(Date.now());
 
     limpiarChecksAnalisis();
     actualizarFormularioSegunTipoPaciente();
@@ -400,6 +418,7 @@ function editarPacientePlanilla(id) {
     if (inputPacienteNombre) inputPacienteNombre.value = paciente.nombre || "";
     if (inputPacienteSemanasGestacion) inputPacienteSemanasGestacion.value = paciente.semanasGestacion || "";
     if (inputPacienteFechaNacimiento) inputPacienteFechaNacimiento.value = paciente.fechaNacimiento || "";
+    if (inputPacienteFechaCarga) inputPacienteFechaCarga.value = fechaCargaParaInput(paciente.fechaCarga || paciente.id);
     cargarChecksAnalisis(paciente.analisis);
     actualizarEstadoEdicion();
     const formulario = document.querySelector("#vistaPacientes .panel");
@@ -557,5 +576,6 @@ window.actualizarDatalistPacientesSerologia = actualizarDatalistPacientesSerolog
 ========================================================= */
 
 actualizarFormularioSegunTipoPaciente();
+if (inputPacienteFechaCarga) inputPacienteFechaCarga.value = fechaCargaParaInput(Date.now());
 renderizarTablaPacientes();
 mostrarVista("pacientes");
