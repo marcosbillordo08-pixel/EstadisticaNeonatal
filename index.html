@@ -180,6 +180,11 @@
                             <input type="date" id="pacienteFechaNacimiento">
                         </div>
 
+                        <div>
+                            <label for="pacienteFechaCarga">Fecha y hora de carga</label>
+                            <input type="datetime-local" id="pacienteFechaCarga">
+                        </div>
+
                         <div class="analisis-multiple">
                             <label>Análisis solicitados</label>
 
@@ -335,6 +340,11 @@
                         <div id="campoTitulo">
                             <label>Título / Dilución</label>
                             <input type="text" id="titulo" placeholder="Ej: 1/2, 1/4, 1/8...">
+                        </div>
+
+                        <div>
+                            <label for="fechaResultado">Fecha del resultado</label>
+                            <input type="date" id="fechaResultado" required>
                         </div>
 
                         <div>
@@ -529,9 +539,9 @@
     <!-- App -->
     <script src="js/firebase-config.js"></script>
     <script src="js/auth.js"></script>
-    <script src="js/pacientes.js?v=20260815-actualizacion-pacientes"></script>
+    <script src="js/pacientes.js?v=20260822-fecha-carga-editable"></script>
     <script src="js/pacientes-tabla.js?v=20260809-1945"></script>
-    <script src="js/serologia.js?v=20260809-1925"></script>
+    <script src="js/serologia.js?v=20260822-fecha-resultado"></script>
     <script src="js/planillas.js?v=20260809-1925"></script>
     <script src="js/pdf.js"></script>
 
