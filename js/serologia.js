@@ -69,6 +69,7 @@ const bloqueSemanasGestacionSerologia = document.getElementById("bloqueSemanasGe
 
 const selectReactivo = document.getElementById("reactivo");
 const selectResultado = document.getElementById("resultado");
+const inputFechaResultado = document.getElementById("fechaResultado");
 const inputTitulo = document.getElementById("titulo");
 const inputCantidad = document.getElementById("cantidad");
 const btnGuardar = document.getElementById("btnGuardar");
@@ -97,16 +98,6 @@ const tabsPeriodo = document.querySelectorAll(".tab-periodo");
    HELPERS
 ========================================================= */
 
-function formatearFechaCompleta(fecha) {
-    if (!(fecha instanceof Date) || isNaN(fecha.getTime())) {
-        return "—";
-    }
-    const dia = String(fecha.getDate()).padStart(2, "0");
-    const mes = String(fecha.getMonth() + 1).padStart(2, "0");
-    const anio = fecha.getFullYear();
-    return `${dia}/${mes}/${anio}`;
-}
-
 function parsearFecha(fechaTexto) {
     if (!fechaTexto) return new Date(0);
 
@@ -133,8 +124,21 @@ function formatearFechaCorta(fecha) {
     return `${dia}/${mes}`;
 }
 
-function fechaHoyTexto() {
-    return formatearFechaCompleta(new Date());
+function fechaHoyISO() {
+    const hoy = new Date();
+    const anio = hoy.getFullYear();
+    const mes = String(hoy.getMonth() + 1).padStart(2, "0");
+    const dia = String(hoy.getDate()).padStart(2, "0");
+    return `${anio}-${mes}-${dia}`;
+}
+
+function formatearFechaResultado(fechaISO) {
+    if (!fechaISO) return "";
+
+    const partes = String(fechaISO).split("-");
+    if (partes.length !== 3) return "";
+
+    return `${partes[2]}/${partes[1]}/${partes[0]}`;
 }
 
 function formatearFechaNacimientoSerologia(fechaISO) {
@@ -362,6 +366,7 @@ function construirEntradaSerologia() {
     const nombre = inputNombre ? inputNombre.value.trim() : "";
     const semanasGestacion = inputSemanasGestacion ? inputSemanasGestacion.value.trim() : "";
     const fechaNacimiento = inputFechaNacimientoSerologia ? inputFechaNacimientoSerologia.value : "";
+    const fechaResultado = inputFechaResultado ? inputFechaResultado.value : "";
 
     const reactivo = selectReactivo ? selectReactivo.value : "";
     const resultado = selectResultado ? selectResultado.value : "";
@@ -388,11 +393,16 @@ function construirEntradaSerologia() {
         return null;
     }
 
+    if (!fechaResultado) {
+        alert("Indicá la fecha del resultado.");
+        return null;
+    }
+
     const tipoPaciente = tipoPacienteTexto === "RN" ? "RN" : "EMBARAZADA";
 
     return {
         id: Date.now(),
-        fecha: fechaHoyTexto(),
+        fecha: formatearFechaResultado(fechaResultado),
         dni: dni,
         tipoPaciente: tipoPaciente,
         sector: sector,
@@ -442,6 +452,7 @@ async function guardarEntrada() {
 
         if (inputTitulo) inputTitulo.value = "";
         if (inputCantidad) inputCantidad.value = 1;
+        if (inputFechaResultado) inputFechaResultado.value = fechaHoyISO();
 
     } catch (error) {
         console.error(error);
@@ -826,6 +837,7 @@ function renderTodoSerologia() {
 
 poblarReactivos();
 actualizarOpcionesResultado();
+if (inputFechaResultado) inputFechaResultado.value = fechaHoyISO();
 renderResumenPorReactivo();
 renderResultadosPorReactivo();
 renderHistorial();
